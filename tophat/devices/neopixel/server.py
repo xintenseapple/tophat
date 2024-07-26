@@ -7,7 +7,7 @@ import socket
 from argparse import ArgumentParser
 from pathlib import Path
 
-import board
+from board.pin import Pin
 import neopixel
 from typing_extensions import Self, final, override
 
@@ -45,12 +45,12 @@ class NeopixelServer(mp.Process):
     @override
     def __init__(self,
                  socket_path: Path,
-                 pin: board.Pin,
+                 pin: Pin,
                  num_leds: int) -> None:
         super().__init__(name='neopixel-server',
                          daemon=True)
         self._socket_path: Path = socket_path
-        self._pin: board.Pin = pin
+        self._pin: Pin = pin
         self._num_leds: int = num_leds
 
         self._lock: mp_sync.Lock = mp.Lock()
@@ -63,4 +63,4 @@ if __name__ == '__main__':
     arg_parser.add_argument('num_leds', type=int)
 
     args = arg_parser.parse_args()
-    server: NeopixelServer = NeopixelServer(DEFAULT_SOCKET_PATH, board.Pin(args.pin), args.num_leds)
+    server: NeopixelServer = NeopixelServer(DEFAULT_SOCKET_PATH, Pin(args.pin), args.num_leds)
