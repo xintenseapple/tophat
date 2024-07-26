@@ -31,6 +31,7 @@ class NeopixelServer(mp.Process):
             print(f'Removing old socket at {self._socket_path}')
 
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server_socket:
+            print(f'Starting server...')
             server_socket.bind(str(self._socket_path))
             server_socket.settimeout(1)
             server_socket.listen()
@@ -43,6 +44,7 @@ class NeopixelServer(mp.Process):
                     continue
                 else:
                     with client_socket:
+                        print(f'Accepted connection...')
                         poller = select.poll()
                         poller.register(client_socket, select.POLLIN)
                         if poller.poll(2000):
