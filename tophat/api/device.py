@@ -1,11 +1,7 @@
 from __future__ import annotations
 
 import abc
-import multiprocessing as mp
 import multiprocessing.synchronize as mp_sync
-import socket
-import uuid
-from pathlib import Path
 from typing import Any, Generic, Tuple, Type, TypeVar
 
 from typing_extensions import Self, final, override
@@ -26,61 +22,48 @@ class UnsupportedCommandError(Exception):
         self._command: Command = command
 
 
-class Device(abc.ABC):
+class DeviceBase(abc.ABC):
 
     @final
     @property
     def id(self) -> int:
         return self._id
 
+    def __init__(self,
+                 device_id: int) -> None:
+        self._id: int = device_id
+
+
+class Device(DeviceBase, abc.ABC):
+
     @final
     def run(self: Self,
+            lock: mp_sync.Lock,
             command: Command[Self, ResultType]) -> ResultType:
-        if type(command) in self._valid_commands():
-            with self._lock:
+        if type(command) in self.supported_commands():
+            with lock:
                 return command.run(self)
         else:
             raise UnsupportedCommandError(self, command)
 
     @override
     def __init__(self,
-                 lock: mp_sync.Lock,
                  device_id: int):
-        self._id: int = device_id
-        self._lock: mp_sync.Lock = lock
+        super().__init__(device_id)
 
     @classmethod
     @abc.abstractmethod
-    def _valid_commands(cls: Type[Self]) -> Tuple[Type[Command[Self, Any]], ...]:
+    def supported_commands(cls: Type[Self]) -> Tuple[Type[Command[Type[Self], Any]], ...]:
         raise NotImplementedError()
 
 
-@final
-class DeviceProxy(Generic[DeviceType]):
+class DeviceProxy(Generic[DeviceType], DeviceBase, abc.ABC):
 
-    @property
-    def id(self) -> int:
-        return self._id
-
-    def send(self,
-             command: Command[DeviceType, ResultType]) -> ResultType:
-        pass
-
-    @override
-    def __init__(self,
-                 device_id: int,
-                 tophat_socket_path: Path) -> None:
-        self._id: int = device_id
-
-        if not tophat_socket_path.is_socket():
-            raise ValueError('tophat_socket_path is not a socket!')
-
-        try:
-            self._socket: socket.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-            self._socket.connect(str(tophat_socket_path))
-        except OSError:
-            print('Failed to connect to tophat server!')
-            raise
+    @abc.abstractmethod
+    def run(self: Self,
+            lock: mp_sync.Lock,
+            command: Command[DeviceType, ResultType]) -> ResultType:
+        raise NotImplementedError()
 
 
 class Command(Generic[DeviceType, ResultType], abc.ABC):

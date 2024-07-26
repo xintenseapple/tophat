@@ -2,7 +2,7 @@ from pathlib import Path
 
 from tophat.api.client import TopHatClient
 from tophat.devices.neopixel import RainbowCommand
-from tophat.devices.printerdevice import PrintCommand
+from tophat.devices.printer import PrintCommand
 
 client: TopHatClient = TopHatClient(Path('/srv/tophat/test.socket'))
 

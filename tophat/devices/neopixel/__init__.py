@@ -1,24 +1,24 @@
 from __future__ import annotations
 
+import abc
 import contextlib
 import dataclasses
 import itertools
-import multiprocessing.synchronize as mp_sync
+import json
 import signal
 import time
 from types import FrameType, TracebackType
-from typing import (Any, Callable, Generator, Iterable, Iterator, List, Optional, Sequence, SupportsIndex, Tuple, Type,
-                    TypeVar, Union)
+from typing import (Any, Callable, Dict, Generator, Iterable, Iterator, List, Optional, Sequence, SupportsIndex, Tuple,
+                    Type, TypeVar, Union)
 
 import neopixel
 from typing_extensions import Self, final, overload, override
 
-from tophat.api.device import AsyncCommand, Command, Device
-
-ExceptionType = TypeVar("ExceptionType",
-                        bound=BaseException)
+from tophat.api.device import AsyncCommand, Device
 
 ColorTuple = Tuple[int, int, int]
+ExceptionType = TypeVar("ExceptionType",
+                        bound=BaseException)
 
 
 @final
@@ -109,15 +109,14 @@ class NeopixelDevice(Device, Sequence[ColorTuple]):
 
     @classmethod
     @override
-    def _valid_commands(cls: Type[Self]) -> Tuple[Type[Command[Self, Any]], ...]:
+    def supported_commands(cls: Type[Self]) -> Tuple[Type[NeopixelCommand[Type[Self], Any]], ...]:
         return SolidColorCommand, BlinkCommand, PulseCommand, RainbowCommand, RainbowWaveCommand
 
     @override
     def __init__(self,
-                 lock: mp_sync.Lock,
                  device_id: int,
                  pixels: neopixel.NeoPixel) -> None:
-        super().__init__(lock, device_id)
+        super().__init__(device_id)
         self._pixels: neopixel.NeoPixel = pixels
 
     @overload
@@ -161,68 +160,77 @@ class NeopixelDevice(Device, Sequence[ColorTuple]):
         return iter(map(Color.from_neopixel, iter(self._pixels)))
 
 
+@dataclasses.dataclass(frozen=True, init=True)
+class NeopixelCommand(AsyncCommand[NeopixelDevice], abc.ABC):
+
+    @final
+    def serialize(self: Self) -> bytes:
+        serialized_data = {
+            'command_type': type(self).__name__,
+            'command_kwargs': {field.name: getattr(self, field.name) for field in dataclasses.fields(self)}
+        }
+        return json.dumps(serialized_data).encode('utf-8')
+
+    @classmethod
+    @final
+    def deserialize(cls: Type[Self],
+                    data: bytes) -> NeopixelCommand:
+        deserialized_data = json.loads(data.decode('utf-8'))
+        command_type: str = deserialized_data['command_type']
+        command_kwargs: Dict[str, Any] = deserialized_data['command_kwargs']
+        for supported_command in NeopixelDevice.supported_commands():
+            if supported_command.__name__ == command_type:
+                return supported_command(**command_kwargs)
+
+
 @final
-class SolidColorCommand(AsyncCommand[NeopixelDevice]):
+@dataclasses.dataclass(frozen=True, init=True)
+class SolidColorCommand(NeopixelCommand):
+    color: Color
 
     @override
     def run(self: Self,
             device: NeopixelDevice) -> None:
-        device.fill(self._color)
+        device.fill(self.color)
         device.show()
 
-    @override
-    def __init__(self,
-                 color: Color) -> None:
-        self._color: Color = color
-
 
 @final
-class BlinkCommand(AsyncCommand[NeopixelDevice]):
+@dataclasses.dataclass(frozen=True, init=True)
+class BlinkCommand(NeopixelCommand):
+    duration: int
+    color: Color
+    frequency: int = 2
 
     @override
     def run(self: Self,
             device: NeopixelDevice) -> None:
-        with Duration(self._duration):
+        with Duration(self.duration):
             while True:
-                device.fill(self._color)
+                device.fill(self.color)
                 device.show()
-                time.sleep(1 / self._frequency / 2)
+                time.sleep(1 / self.frequency / 2)
 
                 device.fill(Color.get_blank())
-                time.sleep(1 / self._frequency / 2)
-
-    @override
-    def __init__(self,
-                 duration: int,
-                 color: Color,
-                 frequency: int = 2) -> None:
-        self._duration: int = duration
-        self._color: Color = color
-        self._frequency: int = frequency
+                time.sleep(1 / self.frequency / 2)
 
 
 @final
-class PulseCommand(AsyncCommand[NeopixelDevice]):
+@dataclasses.dataclass(frozen=True, init=True)
+class PulseCommand(NeopixelCommand):
+    duration: int
+    color: Color
+    frequency: int = 2
+    blanks: int = 0
 
     @override
     def run(self: Self,
             device: NeopixelDevice) -> None:
-        with Duration(self._duration):
+        with Duration(self.duration):
             for i in itertools.chain(range(0, 1000, 1), range(999, 0, -1)):
                 device.brightness = i / 1000
                 device.show()
-                time.sleep(1 / self._frequency / 1000 / 2)
-
-    @override
-    def __init__(self,
-                 duration: int,
-                 color: Color,
-                 frequency: int = 2,
-                 blanks: int = 0) -> None:
-        self._duration: int = duration
-        self._color: Color = color
-        self._frequency: int = frequency
-        self._blanks: int = blanks
+                time.sleep(1 / self.frequency / 1000 / 2)
 
 
 _CycleGenerator = Generator[int, None, None]
@@ -261,27 +269,26 @@ def _rainbow_generator(start: int = 0) -> _ColorGenerator:
 
 
 @final
-class RainbowCommand(AsyncCommand[NeopixelDevice]):
+@dataclasses.dataclass(frozen=True, init=True)
+class RainbowCommand(NeopixelCommand):
+    duration: int
+    frequency: int = 10
 
     @override
     def run(self: Self,
             device: NeopixelDevice) -> None:
-        with Duration(self._duration):
+        with Duration(self.duration):
             for color in _rainbow_generator():
                 device.fill(color)
                 device.show()
-                time.sleep(1 / self._frequency)
-
-    @override
-    def __init__(self,
-                 duration: int,
-                 frequency: int = 10) -> None:
-        self._duration: int = duration
-        self._frequency: int = frequency
+                time.sleep(1 / self.frequency)
 
 
 @final
-class RainbowWaveCommand(AsyncCommand[NeopixelDevice]):
+@dataclasses.dataclass(frozen=True, init=True)
+class RainbowWaveCommand(NeopixelCommand):
+    duration: int
+    frequency: int = 10
 
     @override
     def run(self: Self,
@@ -292,15 +299,7 @@ class RainbowWaveCommand(AsyncCommand[NeopixelDevice]):
         color_generators: Tuple[_ColorGenerator, ...] = tuple(_rainbow_generator(start=start_offset * i)
                                                               for i
                                                               in range(0, num_pixels))
-        with Duration(self._duration):
-            time.sleep(1 / self._frequency)
+        with Duration(self.duration):
+            time.sleep(1 / self.frequency)
             for i in range(0, num_pixels):
                 device[i] = next(color_generators[i])
-
-    @override
-    def __init__(self,
-                 duration: int,
-                 frequency: int = 10) -> None:
-        super().__init__()
-        self._duration: int = duration
-        self._frequency: int = frequency

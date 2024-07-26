@@ -16,7 +16,7 @@ class PrinterDevice(Device):
 
     @classmethod
     @override
-    def _valid_commands(cls: Type[Self]) -> Tuple[Type[Command[Self, Any]], ...]:
+    def supported_commands(cls: Type[Self]) -> Tuple[Type[Command[Self, Any]], ...]:
         return PrintCommand,
 
 

@@ -9,5 +9,5 @@ from tophat.api.device import Command, Device
 class SpeakerDevice(Device):
 
     @classmethod
-    def _valid_commands(cls: Type[Self]) -> Tuple[Type[Command[Self, Any]], ...]:
+    def supported_commands(cls: Type[Self]) -> Tuple[Type[Command[Self, Any]], ...]:
         pass

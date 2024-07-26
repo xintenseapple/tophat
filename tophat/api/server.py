@@ -11,14 +11,14 @@ import socket
 import sys
 import uuid
 from pathlib import Path
-from typing import Any, Callable, Concatenate, Dict, Generic, Optional, ParamSpec, Type, TypeVar
+from typing import Any, Callable, Concatenate, Dict, Generic, Optional, ParamSpec, Tuple, Type, TypeVar
 
 from docker import DockerClient
 from docker.errors import DockerException
 from docker.models.containers import Container
 from typing_extensions import Self, final, override
 
-from tophat.api.device import AsyncCommand, Device, DeviceType, ResultType, UnsupportedCommandError
+from tophat.api.device import AsyncCommand, Device, DeviceBase, DeviceType, ResultType, UnsupportedCommandError
 from tophat.api.hat import HackableHat
 from tophat.api.message import CommandRequest, CommandResponse, MAX_SEND_RECV_SIZE, ResponseCode
 
@@ -28,9 +28,11 @@ LOGGER.addHandler(logging.StreamHandler(sys.stdout))
 
 HAT_SOCKET_PATH: Path = Path('/var/run/hatbox.socket')
 
-DeviceMap = Dict[int, Device]
+DeviceLockPair = Tuple[DeviceBase, mp_sync.Lock]
+DeviceMap = Dict[int, DeviceLockPair]
 HatMap = Dict[Type[HackableHat], "HatBox"]
 
+BaseDeviceType = TypeVar('BaseDeviceType', bound=DeviceBase)
 HatType = TypeVar('HatType', bound=HackableHat)
 ExceptionType = TypeVar("ExceptionType",
                         bound=BaseException)
@@ -79,14 +81,17 @@ class TopHatServer:
         return self._socket_path
 
     def register_device(self: Self,
-                        device_constructor: Callable[Concatenate[mp_sync.Lock, int, DeviceExtraArgs], DeviceType],
-                        device_id: int,
+                        device_constructor: Callable[Concatenate[int, DeviceExtraArgs], BaseDeviceType],
                         *args: DeviceExtraArgs.args,
-                        **kwargs: DeviceExtraArgs.kwargs) -> None:
-        if device_id in self._device_map:
-            raise ValueError(f'Device {device_id} already registered')
+                        device_id: Optional[int] = None,
+                        **kwargs: DeviceExtraArgs.kwargs) -> int:
+        if device_id is not None:
+            if device_id in self._device_map:
+                raise ValueError(f'Device {device_id} already registered')
         else:
-            self._device_map[device_id] = device_constructor(self._manager.Lock(), device_id, *args, **kwargs)
+            device_id = max(self._device_map.keys(), default=0) + 1
+        self._device_map[device_id] = device_constructor(device_id, *args, **kwargs), self._manager.Lock()
+        return device_id
 
     def get_device(self: Self,
                    device_id: int) -> Optional[Device]:
@@ -179,12 +184,14 @@ class TopHatServer:
             client_socket.close()
             return
 
-        target_device: DeviceType = self._device_map[request.device_id]
+        target_device: BaseDeviceType
+        device_lock: mp_sync.Lock
+        target_device, device_lock = self._device_map[request.device_id]
         if isinstance(request.command, AsyncCommand):
             LOGGER.debug(f'Running {type(request.command).__name__} asynchronously on device '
                          f'{hex(target_device.id)}...')
             try:
-                process_pool.apply_async(target_device.run, (request.command,)).get(0.0)
+                process_pool.apply_async(target_device.run, (device_lock, request.command,)).get(0.0)
             except mp.TimeoutError:
                 pass
             LOGGER.debug(f'Command left to run asynchronously')
@@ -198,7 +205,7 @@ class TopHatServer:
             result_callback: _ResultCallback = _ResultCallback(client_socket)
             process_pool.apply_async(
                 target_device.run,
-                (request.command,),
+                (device_lock, request.command,),
                 callback=result_callback.success,
                 error_callback=result_callback.error)
             return

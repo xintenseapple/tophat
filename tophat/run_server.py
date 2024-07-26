@@ -1,17 +1,16 @@
 from pathlib import Path
 
-import board
-import neopixel
+#import neopixel
+#import board
 
 from tophat.api.server import TopHatServer
-from tophat.devices.neopixel import NeopixelDevice
-from tophat.devices.printerdevice import PrinterDevice
-
+from tophat.devices.neopixel.proxy import NeopixelDeviceProxy
+from tophat.devices.printer import PrinterDevice
 
 def main() -> None:
     server = TopHatServer(Path('/srv/tophat/test.socket'))
-    server.register_device(PrinterDevice, 0x1)
-    server.register_device(NeopixelDevice, 0x2, neopixel.NeoPixel(board.D12, 60))
+    server.register_device(PrinterDevice)
+    server.register_device(NeopixelDeviceProxy, board.D12, 60)
     server.start()
 
 
