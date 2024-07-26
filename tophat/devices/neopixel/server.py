@@ -26,26 +26,26 @@ class NeopixelServer(mp.Process):
     @override
     def run(self: Self) -> None:
         neopixel_device: NeopixelDevice = NeopixelDevice(0x0, neopixel.NeoPixel(self._pin, self._num_leds))
-        server_socket: socket.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        server_socket.bind(str(self._socket_path))
-        server_socket.settimeout(1)
-        server_socket.listen()
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server_socket:
+            server_socket.bind(str(self._socket_path))
+            server_socket.settimeout(1)
+            server_socket.listen()
 
-        while not self._stop_event.is_set():
-            try:
-                client_socket: socket.socket
-                client_socket, addr = server_socket.accept()
-            except socket.timeout:
-                continue
-            else:
-                with client_socket:
-                    poller = select.poll()
-                    poller.register(client_socket, select.POLLIN)
-                    if poller.poll(2000):
-                        raw_data: bytes = server_socket.recv(MAX_SEND_RECV_SIZE)
-                        command: NeopixelCommand = NeopixelCommand.deserialize(raw_data)
-                        print(f'Received {type(command).__name__} command!')
-                        neopixel_device.run(self._lock, command)
+            while not self._stop_event.is_set():
+                try:
+                    client_socket: socket.socket
+                    client_socket, addr = server_socket.accept()
+                except socket.timeout:
+                    continue
+                else:
+                    with client_socket:
+                        poller = select.poll()
+                        poller.register(client_socket, select.POLLIN)
+                        if poller.poll(2000):
+                            raw_data: bytes = server_socket.recv(MAX_SEND_RECV_SIZE)
+                            command: NeopixelCommand = NeopixelCommand.deserialize(raw_data)
+                            print(f'Received {type(command).__name__} command!')
+                            neopixel_device.run(self._lock, command)
 
     def stop(self: Self) -> None:
         self._stop_event.set()
