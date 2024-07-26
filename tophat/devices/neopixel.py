@@ -117,7 +117,7 @@ class NeopixelDevice(Device, Sequence[ColorTuple]):
                  lock: mp_sync.Lock,
                  device_id: int,
                  pixels: neopixel.NeoPixel) -> None:
-        super().__init__(device_id)
+        super().__init__(lock, device_id)
         self._pixels: neopixel.NeoPixel = pixels
 
     @overload
