@@ -26,6 +26,10 @@ class NeopixelServer(mp.Process):
     @override
     def run(self: Self) -> None:
         neopixel_device: NeopixelDevice = NeopixelDevice(0x0, neopixel.NeoPixel(self._pin, self._num_leds))
+        if self._socket_path.is_socket():
+            self._socket_path.unlink()
+            print(f'Removing old socket at {self._socket_path}')
+
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server_socket:
             server_socket.bind(str(self._socket_path))
             server_socket.settimeout(1)
