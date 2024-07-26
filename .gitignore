@@ -1,6 +1,9 @@
 .idea/
+**/exploit.py
+.gdb_history
+
+# Python ignores
+venv/
 **/__pycache__/
 build/
 tophat.egg-info/
-**/exploit.py
-.gdb_history
