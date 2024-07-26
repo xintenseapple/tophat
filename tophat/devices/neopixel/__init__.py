@@ -25,43 +25,6 @@ ExceptionType = TypeVar("ExceptionType",
 
 
 @final
-@dataclasses.dataclass(frozen=True, order=True, slots=True)
-class Color:
-    # Fields
-    red: int
-    green: int
-    blue: int
-
-    def as_neopixel(self: Self) -> ColorTuple:
-        return self.red, self.green, self.blue
-
-    @classmethod
-    def from_neopixel(cls: Type[Self],
-                      color: ColorTuple) -> Self:
-        return cls(*color)
-
-    @classmethod
-    def get_blank(cls: Type[Self]) -> Self:
-        return cls(0, 0, 0)
-
-    @classmethod
-    def get_red(cls: Type[Self]) -> Self:
-        return cls(255, 0, 0)
-
-    @classmethod
-    def get_green(cls: Type[Self]) -> Self:
-        return cls(0, 255, 0)
-
-    @classmethod
-    def get_blue(cls: Type[Self]) -> Self:
-        return cls(0, 0, 255)
-
-    @override
-    def __str__(self):
-        return f'({self.red}, {self.green}, {self.blue})'
-
-
-@final
 class Duration(contextlib.AbstractContextManager):
     class _TimedOutError(Exception):
         pass
@@ -104,8 +67,8 @@ class Duration(contextlib.AbstractContextManager):
 class NeopixelDevice(Device, Sequence[ColorTuple]):
 
     def fill(self,
-             color: Color):
-        self._pixels.fill(color.as_neopixel())
+             color: ColorTuple):
+        self._pixels.fill(color)
 
     def show(self):
         self._pixels.show()
@@ -140,27 +103,27 @@ class NeopixelDevice(Device, Sequence[ColorTuple]):
     @overload
     def __setitem__(self,
                     key: SupportsIndex,
-                    value: Color) -> None:
+                    value: ColorTuple) -> None:
         ...
 
     @overload
     def __setitem__(self,
                     key: slice,
-                    value: Iterable[Color]) -> None:
+                    value: Iterable[ColorTuple]) -> None:
         ...
 
     def __setitem__(self,
                     key: Union[SupportsIndex, slice],
-                    value: Union[Color, Iterable[Color]]) -> None:
-        self._pixels[key] = value.as_neopixel()
+                    value: Union[ColorTuple, Iterable[ColorTuple]]) -> None:
+        self._pixels[key] = value
 
     @override
     def __len__(self) -> int:
         return len(self._pixels)
 
     @override
-    def __iter__(self) -> Iterator[Color]:
-        return iter(map(Color.from_neopixel, iter(self._pixels)))
+    def __iter__(self) -> Iterator[ColorTuple]:
+        return iter(self._pixels)
 
 
 @final
@@ -208,7 +171,7 @@ class NeopixelCommand(AsyncCommand[NeopixelDevice], abc.ABC):
 @final
 @dataclasses.dataclass(frozen=True, init=True)
 class SolidColorCommand(NeopixelCommand):
-    color: Color
+    color: ColorTuple
 
     @override
     def run(self: Self,
@@ -221,7 +184,7 @@ class SolidColorCommand(NeopixelCommand):
 @dataclasses.dataclass(frozen=True, init=True)
 class BlinkCommand(NeopixelCommand):
     duration: int
-    color: Color
+    color: ColorTuple
     frequency: int = 2
 
     @override
@@ -233,7 +196,7 @@ class BlinkCommand(NeopixelCommand):
                 device.show()
                 time.sleep(1 / self.frequency / 2)
 
-                device.fill(Color.get_blank())
+                device.fill((0, 0, 0))
                 time.sleep(1 / self.frequency / 2)
 
 
@@ -241,7 +204,7 @@ class BlinkCommand(NeopixelCommand):
 @dataclasses.dataclass(frozen=True, init=True)
 class PulseCommand(NeopixelCommand):
     duration: int
-    color: Color
+    color: ColorTuple
     frequency: int = 2
     blanks: int = 0
 
@@ -272,7 +235,7 @@ def _cycle_generator(min_val: int = 0,
                                                (0,) * blanks))
 
 
-_ColorGenerator = Generator[Color, None, None]
+_ColorGenerator = Generator[ColorTuple, None, None]
 
 
 def _rainbow_generator(start: int = 0) -> _ColorGenerator:
@@ -287,7 +250,7 @@ def _rainbow_generator(start: int = 0) -> _ColorGenerator:
     blue = itertools.islice(_cycle_generator(blanks=255), blue_start, None)
 
     while True:
-        yield Color(next(red), next(green), next(blue))
+        yield next(red), next(green), next(blue)
 
 
 @final
