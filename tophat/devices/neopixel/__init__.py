@@ -198,6 +198,8 @@ class BlinkCommand(NeopixelCommand):
 
                 device.fill((0, 0, 0))
                 time.sleep(1 / self.frequency / 2)
+        device.fill((0, 0, 0))
+        device.show()
 
 
 @final
@@ -216,6 +218,8 @@ class PulseCommand(NeopixelCommand):
                 device.brightness = i / 1000
                 device.show()
                 time.sleep(1 / self.frequency / 1000 / 2)
+        device.fill((0, 0, 0))
+        device.show()
 
 
 _CycleGenerator = Generator[int, None, None]
@@ -267,6 +271,8 @@ class RainbowCommand(NeopixelCommand):
                 device.fill(color)
                 device.show()
                 time.sleep(1 / self.frequency)
+        device.fill((0, 0, 0))
+        device.show()
 
 
 @final
@@ -288,3 +294,5 @@ class RainbowWaveCommand(NeopixelCommand):
             time.sleep(1 / self.frequency)
             for i in range(0, num_pixels):
                 device[i] = next(color_generators[i])
+        device.fill((0, 0, 0))
+        device.show()

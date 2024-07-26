@@ -5,13 +5,7 @@
 #pragma once
 
 PyObject *create_color(const char red, const char green, const char blue) {
-    PyObject *neopixel_module_pyobj = get_module("tophat.devices.neopixel");
-    PyObject *color_pyobj = PyObject_CallMethod(neopixel_module_pyobj,
-                                                "Color",
-                                                "(B, B, B)",
-                                                red, green, blue);
-    Py_DECREF(neopixel_module_pyobj);
-    return color_pyobj;
+    return PyObject_Build("(B, B, B)", red, green, blue);
 }
 
 PyObject *create_solid_color_command(PyObject *color) {
