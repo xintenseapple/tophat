@@ -54,8 +54,6 @@ class NeopixelServer:
                  socket_path: Path,
                  pin: board.pin.Pin,
                  num_leds: int) -> None:
-        super().__init__(name='neopixel-server',
-                         daemon=True)
         self._socket_path: Path = socket_path
         self._pin: board.pin.Pin = pin
         self._num_leds: int = num_leds
