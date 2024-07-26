@@ -64,3 +64,9 @@ if __name__ == '__main__':
 
     args = arg_parser.parse_args()
     server: NeopixelServer = NeopixelServer(DEFAULT_SOCKET_PATH, board.pin.Pin(args.pin), args.num_leds)
+    try:
+        while True:
+            pass
+    except KeyboardInterrupt:
+        print('Received keyboard interrupt, shutting down...')
+
