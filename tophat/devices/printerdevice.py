@@ -8,7 +8,7 @@ from tophat.api.device import AsyncCommand, Command, Device, DeviceType
 
 
 @final
-class Printer(Device):
+class PrinterDevice(Device):
 
     def print(self: Self,
               output: str) -> None:
@@ -20,7 +20,7 @@ class Printer(Device):
         return PrintCommand,
 
 
-class PrintCommand(AsyncCommand[Printer]):
+class PrintCommand(AsyncCommand[PrinterDevice]):
 
     @override
     def run(self,

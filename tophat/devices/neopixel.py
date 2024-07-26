@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import dataclasses
 import itertools
+import multiprocessing.synchronize as mp_sync
 import signal
 import time
 from types import FrameType, TracebackType
@@ -97,7 +98,7 @@ class Duration(contextlib.AbstractContextManager):
 
 
 @final
-class NeoPixelDevice(Device, Sequence[ColorTuple]):
+class NeopixelDevice(Device, Sequence[ColorTuple]):
 
     def fill(self,
              color: Color):
@@ -113,6 +114,7 @@ class NeoPixelDevice(Device, Sequence[ColorTuple]):
 
     @override
     def __init__(self,
+                 lock: mp_sync.Lock,
                  device_id: int,
                  pixels: neopixel.NeoPixel) -> None:
         super().__init__(device_id)
@@ -160,11 +162,11 @@ class NeoPixelDevice(Device, Sequence[ColorTuple]):
 
 
 @final
-class SolidColorCommand(AsyncCommand[NeoPixelDevice]):
+class SolidColorCommand(AsyncCommand[NeopixelDevice]):
 
     @override
     def run(self: Self,
-            device: NeoPixelDevice) -> None:
+            device: NeopixelDevice) -> None:
         device.fill(self._color)
         device.show()
 
@@ -175,11 +177,11 @@ class SolidColorCommand(AsyncCommand[NeoPixelDevice]):
 
 
 @final
-class BlinkCommand(AsyncCommand[NeoPixelDevice]):
+class BlinkCommand(AsyncCommand[NeopixelDevice]):
 
     @override
     def run(self: Self,
-            device: NeoPixelDevice) -> None:
+            device: NeopixelDevice) -> None:
         with Duration(self._duration):
             while True:
                 device.fill(self._color)
@@ -200,11 +202,11 @@ class BlinkCommand(AsyncCommand[NeoPixelDevice]):
 
 
 @final
-class PulseCommand(AsyncCommand[NeoPixelDevice]):
+class PulseCommand(AsyncCommand[NeopixelDevice]):
 
     @override
     def run(self: Self,
-            device: NeoPixelDevice) -> None:
+            device: NeopixelDevice) -> None:
         with Duration(self._duration):
             for i in itertools.chain(range(0, 1000, 1), range(999, 0, -1)):
                 device.brightness = i / 1000
@@ -259,11 +261,11 @@ def _rainbow_generator(start: int = 0) -> _ColorGenerator:
 
 
 @final
-class RainbowCommand(AsyncCommand[NeoPixelDevice]):
+class RainbowCommand(AsyncCommand[NeopixelDevice]):
 
     @override
     def run(self: Self,
-            device: NeoPixelDevice) -> None:
+            device: NeopixelDevice) -> None:
         with Duration(self._duration):
             for color in _rainbow_generator():
                 device.fill(color)
@@ -279,11 +281,11 @@ class RainbowCommand(AsyncCommand[NeoPixelDevice]):
 
 
 @final
-class RainbowWaveCommand(AsyncCommand[NeoPixelDevice]):
+class RainbowWaveCommand(AsyncCommand[NeopixelDevice]):
 
     @override
     def run(self: Self,
-            device: NeoPixelDevice) -> None:
+            device: NeopixelDevice) -> None:
         num_pixels: int = len(device)
         start_offset: int = 765 // num_pixels
 
