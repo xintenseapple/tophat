@@ -1,0 +1,4 @@
+typing_extensions~=4.7.1
+docker~=7.1.0
+adafruit-circuitpython-neopixel~=6.3.11
+adafruit-circuitpython-pn532~=2.4.1
