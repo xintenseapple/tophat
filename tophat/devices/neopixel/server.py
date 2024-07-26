@@ -2,13 +2,10 @@ from __future__ import annotations
 
 import multiprocessing as mp
 import multiprocessing.synchronize as mp_sync
-import os
 import select
-import signal
 import socket
 from argparse import ArgumentParser
 from pathlib import Path
-from time import sleep
 
 import board
 import neopixel
@@ -21,10 +18,9 @@ MAX_SEND_RECV_SIZE: int = 512
 
 
 @final
-class NeopixelServer(mp.Process):
+class NeopixelServer:
 
-    @override
-    def run(self: Self) -> None:
+    def start(self: Self) -> None:
         neopixel_device: NeopixelDevice = NeopixelDevice(0x0, neopixel.NeoPixel(self._pin, self._num_leds))
         if self._socket_path.is_socket():
             self._socket_path.unlink()
@@ -36,7 +32,7 @@ class NeopixelServer(mp.Process):
             server_socket.settimeout(1)
             server_socket.listen()
 
-            while not self._stop_event.is_set():
+            while True:
                 try:
                     client_socket: socket.socket
                     client_socket, addr = server_socket.accept()
@@ -53,9 +49,6 @@ class NeopixelServer(mp.Process):
                             print(f'Received {type(command).__name__} command!')
                             neopixel_device.run(self._lock, command)
 
-    def stop(self: Self) -> None:
-        self._stop_event.set()
-
     @override
     def __init__(self,
                  socket_path: Path,
@@ -68,7 +61,6 @@ class NeopixelServer(mp.Process):
         self._num_leds: int = num_leds
 
         self._lock: mp_sync.Lock = mp.Lock()
-        self._stop_event: mp.Event = mp.Event()
 
 
 if __name__ == '__main__':
@@ -79,13 +71,8 @@ if __name__ == '__main__':
 
     args = arg_parser.parse_args()
     server: NeopixelServer = NeopixelServer(DEFAULT_SOCKET_PATH, board.pin.Pin(args.pin), args.num_leds)
-    server.start()
+
     try:
-        while server.is_alive():
-            sleep(2)
-        else:
-            print('Server closed unexpectedly!')
+        server.start()
     except KeyboardInterrupt:
         print('Received keyboard interrupt, shutting down...')
-        server.stop()
-        server.join()
