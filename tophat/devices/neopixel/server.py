@@ -29,6 +29,7 @@ class NeopixelServer:
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server_socket:
             print(f'Starting server...', flush=True)
             server_socket.bind(str(self._socket_path))
+            self._socket_path.chmod(0o776)
             server_socket.settimeout(1.0)
             server_socket.listen()
 
