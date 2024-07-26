@@ -10,7 +10,7 @@ from tophat.devices.printer import PrinterDevice
 def main() -> None:
     server = TopHatServer(Path('/srv/tophat/test.socket'))
     server.register_device(PrinterDevice)
-    server.register_device(NeopixelDeviceProxy, board.D12, 60)
+    server.register_device(NeopixelDeviceProxy, Path('/srv/tophat/neopixel.socket'))
     server.start()
 
 

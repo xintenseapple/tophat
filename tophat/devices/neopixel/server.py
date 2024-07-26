@@ -24,12 +24,12 @@ class NeopixelServer:
         neopixel_device: NeopixelDevice = NeopixelDevice(0x0, neopixel.NeoPixel(self._pin, self._num_leds))
         if self._socket_path.is_socket():
             self._socket_path.unlink()
-            print(f'Removing old socket at {self._socket_path}')
+            print(f'Removing old socket at {self._socket_path}', flush=True)
 
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server_socket:
-            print(f'Starting server...')
+            print(f'Starting server...', flush=True)
             server_socket.bind(str(self._socket_path))
-            server_socket.settimeout(1)
+            server_socket.settimeout(1.0)
             server_socket.listen()
 
             while True:
@@ -40,13 +40,13 @@ class NeopixelServer:
                     continue
                 else:
                     with client_socket:
-                        print(f'Accepted connection...')
+                        print(f'Accepted connection...', flush=True)
                         poller = select.poll()
                         poller.register(client_socket, select.POLLIN)
                         if poller.poll(2000):
                             raw_data: bytes = server_socket.recv(MAX_SEND_RECV_SIZE)
                             command: NeopixelCommand = NeopixelCommand.deserialize(raw_data)
-                            print(f'Received {type(command).__name__} command!')
+                            print(f'Received {type(command).__name__} command!', flush=True)
                             neopixel_device.run(self._lock, command)
 
     @override

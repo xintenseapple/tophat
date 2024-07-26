@@ -9,11 +9,11 @@ import multiprocessing.synchronize as mp_sync
 import signal
 import socket
 import time
+from pathlib import Path
 from types import FrameType, TracebackType
 from typing import (Any, Callable, Dict, Generator, Iterable, Iterator, List, Optional, Sequence, SupportsIndex, Tuple,
                     Type, TypeVar, Union)
 
-import board
 import neopixel
 from typing_extensions import Self, final, overload, override
 
@@ -170,16 +170,16 @@ class NeopixelDeviceProxy(DeviceProxy[NeopixelDevice]):
     def run(self: Self,
             lock: mp_sync.Lock,
             command: NeopixelCommand) -> None:
-        client_socket: socket.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        with client_socket.connect(str(self._socket_path)):
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client_socket:
+            client_socket.connect(str(self._socket_path))
             client_socket.sendall(command.serialize())
 
     @override
     def __init__(self,
                  device_id: int,
-                 pin: board.Pin,
-                 num_leds: int) -> None:
+                 socket_path: Path) -> None:
         super().__init__(device_id)
+        self._socket_path: Path = socket_path
 
 
 @dataclasses.dataclass(frozen=True, init=True)
