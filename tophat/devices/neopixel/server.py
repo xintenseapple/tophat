@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import multiprocessing as mp
 import multiprocessing.synchronize as mp_sync
+import os
 import select
+import signal
 import socket
 from argparse import ArgumentParser
 from pathlib import Path
@@ -43,6 +45,9 @@ class NeopixelServer(mp.Process):
                         print(f'Received {type(command).__name__} command!')
                         neopixel_device.run(self._lock, command)
 
+    def stop(self: Self) -> None:
+        self._stop_event.set()
+
     @override
     def __init__(self,
                  socket_path: Path,
@@ -55,6 +60,7 @@ class NeopixelServer(mp.Process):
         self._num_leds: int = num_leds
 
         self._lock: mp_sync.Lock = mp.Lock()
+        self._stop_event: mp.Event = mp.Event()
 
 
 if __name__ == '__main__':
@@ -65,9 +71,11 @@ if __name__ == '__main__':
 
     args = arg_parser.parse_args()
     server: NeopixelServer = NeopixelServer(DEFAULT_SOCKET_PATH, board.pin.Pin(args.pin), args.num_leds)
+    server.start()
     try:
         while True:
             pass
     except KeyboardInterrupt:
         print('Received keyboard interrupt, shutting down...')
-
+        server.stop()
+        server.join()
