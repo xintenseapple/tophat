@@ -40,6 +40,7 @@ class NeopixelServer(mp.Process):
                     if poller.poll(2000):
                         raw_data: bytes = server_socket.recv(MAX_SEND_RECV_SIZE)
                         command: NeopixelCommand = NeopixelCommand.deserialize(raw_data)
+                        print(f'Received {type(command).__name__} command!')
                         neopixel_device.run(self._lock, command)
 
     @override
