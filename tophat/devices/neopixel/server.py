@@ -8,6 +8,7 @@ import signal
 import socket
 from argparse import ArgumentParser
 from pathlib import Path
+from time import sleep
 
 import board
 import neopixel
@@ -26,17 +27,18 @@ class NeopixelServer(mp.Process):
     def run(self: Self) -> None:
         neopixel_device: NeopixelDevice = NeopixelDevice(0x0, neopixel.NeoPixel(self._pin, self._num_leds))
         server_socket: socket.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        with server_socket.bind(str(self._socket_path)):
-            server_socket.settimeout(1)
-            server_socket.listen()
+        server_socket.bind(str(self._socket_path))
+        server_socket.settimeout(1)
+        server_socket.listen()
 
-            while not self._stop_event.is_set():
-                try:
-                    client_socket: socket.socket
-                    client_socket, addr = server_socket.accept()
-                except socket.timeout:
-                    continue
-                else:
+        while not self._stop_event.is_set():
+            try:
+                client_socket: socket.socket
+                client_socket, addr = server_socket.accept()
+            except socket.timeout:
+                continue
+            else:
+                with client_socket:
                     poller = select.poll()
                     poller.register(client_socket, select.POLLIN)
                     if poller.poll(2000):
@@ -73,8 +75,10 @@ if __name__ == '__main__':
     server: NeopixelServer = NeopixelServer(DEFAULT_SOCKET_PATH, board.pin.Pin(args.pin), args.num_leds)
     server.start()
     try:
-        while True:
-            pass
+        while server.is_alive():
+            sleep(2)
+        else:
+            print('Server closed unexpectedly!')
     except KeyboardInterrupt:
         print('Received keyboard interrupt, shutting down...')
         server.stop()
