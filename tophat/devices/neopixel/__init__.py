@@ -261,7 +261,7 @@ def _rainbow_generator(start: int = 0) -> _ColorGenerator:
 @dataclasses.dataclass(frozen=True, init=True)
 class RainbowCommand(NeopixelCommand):
     duration: int
-    frequency: int = 100
+    frequency: int = 200
 
     @override
     def run(self: Self,
