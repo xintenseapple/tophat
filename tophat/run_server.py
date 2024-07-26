@@ -4,7 +4,7 @@ from pathlib import Path
 #import board
 
 from tophat.api.server import TopHatServer
-from tophat.devices.neopixel.proxy import NeopixelDeviceProxy
+from tophat.devices.neopixel.server import NeopixelDeviceProxy
 from tophat.devices.printer import PrinterDevice
 
 def main() -> None:

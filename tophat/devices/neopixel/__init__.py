@@ -5,16 +5,19 @@ import contextlib
 import dataclasses
 import itertools
 import json
+import multiprocessing.synchronize as mp_sync
 import signal
+import socket
 import time
 from types import FrameType, TracebackType
 from typing import (Any, Callable, Dict, Generator, Iterable, Iterator, List, Optional, Sequence, SupportsIndex, Tuple,
                     Type, TypeVar, Union)
 
+import board
 import neopixel
 from typing_extensions import Self, final, overload, override
 
-from tophat.api.device import AsyncCommand, Device
+from tophat.api.device import AsyncCommand, Device, DeviceProxy
 
 ColorTuple = Tuple[int, int, int]
 ExceptionType = TypeVar("ExceptionType",
@@ -158,6 +161,25 @@ class NeopixelDevice(Device, Sequence[ColorTuple]):
     @override
     def __iter__(self) -> Iterator[Color]:
         return iter(map(Color.from_neopixel, iter(self._pixels)))
+
+
+@final
+class NeopixelDeviceProxy(DeviceProxy[NeopixelDevice]):
+
+    @override
+    def run(self: Self,
+            lock: mp_sync.Lock,
+            command: NeopixelCommand) -> None:
+        client_socket: socket.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        with client_socket.connect(str(self._socket_path)):
+            client_socket.sendall(command.serialize())
+
+    @override
+    def __init__(self,
+                 device_id: int,
+                 pin: board.Pin,
+                 num_leds: int) -> None:
+        super().__init__(device_id)
 
 
 @dataclasses.dataclass(frozen=True, init=True)

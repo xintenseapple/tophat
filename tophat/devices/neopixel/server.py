@@ -2,17 +2,15 @@ from __future__ import annotations
 
 import multiprocessing as mp
 import multiprocessing.synchronize as mp_sync
-import os
 import select
 import socket
-import subprocess
+from argparse import ArgumentParser
 from pathlib import Path
 
 import board
 import neopixel
 from typing_extensions import Self, final, override
 
-from tophat.api.device import DeviceProxy
 from tophat.devices.neopixel import NeopixelCommand, NeopixelDevice
 
 DEFAULT_SOCKET_PATH: Path = Path('/srv/tophat/neopixel.socket')
@@ -58,20 +56,11 @@ class NeopixelServer(mp.Process):
         self._lock: mp_sync.Lock = mp.Lock()
 
 
-@final
-class NeopixelDeviceProxy(DeviceProxy[NeopixelDevice]):
+if __name__ == '__main__':
+    arg_parser = ArgumentParser()
+    arg_parser.add_argument('socket_path', type=Path)
+    arg_parser.add_argument('pin', type=int)
+    arg_parser.add_argument('num_leds', type=int)
 
-    @override
-    def run(self: Self,
-            lock: mp_sync.Lock,
-            command: NeopixelCommand) -> None:
-        client_socket: socket.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        with client_socket.connect(str(self._socket_path)):
-            client_socket.sendall(command.serialize())
-
-    @override
-    def __init__(self,
-                 device_id: int,
-                 pin: board.Pin,
-                 num_leds: int) -> None:
-        super().__init__(device_id)
+    args = arg_parser.parse_args()
+    server: NeopixelServer = NeopixelServer(DEFAULT_SOCKET_PATH, board.Pin(args.pin), args.num_leds)
