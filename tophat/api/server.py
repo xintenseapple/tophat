@@ -185,7 +185,7 @@ class TopHatServer:
         target_device, device_lock = self._device_map[request.device_name]
         if isinstance(request.command, AsyncCommand):
             LOGGER.debug(f'Running {type(request.command).__name__} asynchronously on device '
-                         f'{hex(target_device.id)}...')
+                         f'{hex(target_device.name)}...')
             try:
                 process_pool.apply_async(target_device.run, (device_lock, request.command,)).get(0.0)
             except mp.TimeoutError:
@@ -197,7 +197,7 @@ class TopHatServer:
 
         else:
             LOGGER.debug(f'Running {type(request.command).__name__} on device '
-                         f'{hex(target_device.id)}...')
+                         f'{hex(target_device.name)}...')
             result_callback: _ResultCallback = _ResultCallback(client_socket)
             process_pool.apply_async(
                 target_device.run,
