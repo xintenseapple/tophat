@@ -17,7 +17,7 @@ class UnsupportedCommandError(Exception):
     def __init__(self,
                  device: Device,
                  command: Command) -> None:
-        super().__init__(f'Command {type(command)} not supported for device {device.id}')
+        super().__init__(f'Command {type(command)} not supported for device {device.name}')
         self._device = device
         self._command: Command = command
 
@@ -26,12 +26,12 @@ class DeviceBase(abc.ABC):
 
     @final
     @property
-    def id(self) -> int:
-        return self._id
+    def name(self) -> str:
+        return self._name
 
     def __init__(self,
-                 device_id: int) -> None:
-        self._id: int = device_id
+                 device_name: str) -> None:
+        self._name: str = device_name
 
 
 class Device(DeviceBase, abc.ABC):
@@ -48,8 +48,8 @@ class Device(DeviceBase, abc.ABC):
 
     @override
     def __init__(self,
-                 device_id: int):
-        super().__init__(device_id)
+                 device_name: str):
+        super().__init__(device_name)
 
     @classmethod
     @abc.abstractmethod

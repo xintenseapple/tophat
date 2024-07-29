@@ -44,8 +44,8 @@ class Response(Message, abc.ABC):
 class CommandRequest(Generic[DeviceType, ResultType], Request):
 
     @property
-    def device_id(self: Self) -> int:
-        return self._device_id
+    def device_name(self: Self) -> str:
+        return self._device_name
 
     @property
     def command(self: Self) -> Command[DeviceType, ResultType]:
@@ -53,10 +53,10 @@ class CommandRequest(Generic[DeviceType, ResultType], Request):
 
     @override
     def __init__(self,
-                 device_id: int,
+                 device_name: str,
                  command: Command[DeviceType, ResultType]):
         self._command: Command[DeviceType, ResultType] = command
-        self._device_id: int = device_id
+        self._device_name: str = device_name
 
 
 @final

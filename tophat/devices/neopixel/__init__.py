@@ -14,6 +14,7 @@ from types import FrameType, TracebackType
 from typing import (Any, Callable, Dict, Generator, Iterable, Iterator, List, Optional, Sequence, SupportsIndex, Tuple,
                     Type, TypeVar, Union)
 
+import board
 import neopixel
 from typing_extensions import Self, final, overload, override
 
@@ -80,10 +81,11 @@ class NeopixelDevice(Device, Sequence[ColorTuple]):
 
     @override
     def __init__(self,
-                 device_id: int,
-                 pixels: neopixel.NeoPixel) -> None:
-        super().__init__(device_id)
-        self._pixels: neopixel.NeoPixel = pixels
+                 device_name: str,
+                 pin: board.pin.Pin,
+                 num_leds: int) -> None:
+        super().__init__(device_name)
+        self._pixels: neopixel.NeoPixel = neopixel.NeoPixel(pin, num_leds)
 
     @overload
     def __getitem__(self,
@@ -139,9 +141,9 @@ class NeopixelDeviceProxy(DeviceProxy[NeopixelDevice]):
 
     @override
     def __init__(self,
-                 device_id: int,
+                 device_name: str,
                  socket_path: Path) -> None:
-        super().__init__(device_id)
+        super().__init__(device_name)
         self._socket_path: Path = socket_path
 
 

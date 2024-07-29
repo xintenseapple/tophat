@@ -8,7 +8,6 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 import board
-import neopixel
 from typing_extensions import Self, final, override
 
 from tophat.devices.neopixel import NeopixelCommand, NeopixelDevice
@@ -21,7 +20,7 @@ MAX_SEND_RECV_SIZE: int = 512
 class NeopixelServer:
 
     def start(self: Self) -> None:
-        neopixel_device: NeopixelDevice = NeopixelDevice(0x0, neopixel.NeoPixel(self._pin, self._num_leds))
+        neopixel_device: NeopixelDevice = NeopixelDevice('neopixels', self._pin, self._num_leds)
         if self._socket_path.is_socket():
             self._socket_path.unlink()
             print(f'Removing old socket at {self._socket_path}', flush=True)

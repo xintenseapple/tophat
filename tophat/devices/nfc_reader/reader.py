@@ -1,17 +1,15 @@
 from __future__ import annotations
 
-import multiprocessing.synchronize as mp_sync
 import multiprocessing as mp
 import time
-from typing import Any, Optional, Tuple, Type
+from typing import Optional
 
-from adafruit_pn532.spi import PN532_SPI
+import board
 from adafruit_pn532.adafruit_pn532 import PN532
+from adafruit_pn532.spi import PN532_SPI
 from busio import SPI
 from digitalio import DigitalInOut
 from typing_extensions import Self, final, override
-
-from tophat.api.device import Command, Device
 
 
 @final
@@ -26,7 +24,7 @@ class ReaderProcess(mp.Process):
 
     @override
     def run(self: Self) -> None:
-        pn532: PN532 = PN532_SPI(SPI(self._sck, self._mosi, self._miso), self._cs)
+        pn532: PN532 = PN532_SPI(SPI(self._sck, self._mosi, self._miso), DigitalInOut(self._cs))
         pn532.low_power = True
         pn532.SAM_configuration()
         while True:
@@ -37,16 +35,16 @@ class ReaderProcess(mp.Process):
 
     @override
     def __init__(self,
-                 cs: DigitalInOut,
-                 sck: int,
-                 mosi: int,
-                 miso: int) -> None:
+                 sck: board.pin.Pin,
+                 miso: board.pin.Pin,
+                 mosi: board.pin.Pin,
+                 cs: board.pin.Pin) -> None:
         super().__init__(name='nfc_reader',
                          daemon=True)
-        self._cs = cs
-        self._sck = sck
-        self._mosi = mosi
-        self._miso = miso
+        self._sck: board.pin.Pin = sck
+        self._mosi: board.pin.Pin = mosi
+        self._miso: board.pin.Pin = miso
+        self._cs: board.pin.Pin = cs
 
         self._read_buffer_queue: mp.Queue[bytearray] = mp.Queue[bytearray](maxsize=64)
         self._stop_event = mp.Event()
@@ -83,42 +81,3 @@ class ReaderProcess(mp.Process):
         pn532.power_down()
         self._read_buffer_queue.close()
         self._read_buffer_queue.join_thread()
-
-
-@final
-class PN532Device(Device):
-
-    def get_data(self: Self,
-                 timeout: Optional[float] = None) -> Optional[bytearray]:
-        return self._reader_process.read_buffer_queue.get(block=True,
-                                                          timeout=timeout)
-
-    @classmethod
-    @override
-    def supported_commands(cls: Type[Self]) -> Tuple[Type[Command[Self, Any]], ...]:
-        return (ReadDataCommand,)
-
-    @override
-    def __init__(self,
-                 device_id: int,
-                 cs: DigitalInOut,
-                 sck: int,
-                 mosi: int,
-                 miso: int) -> None:
-        super().__init__(device_id)
-        mp.set_start_method('spawn')
-        self._reader_process = ReaderProcess(cs, sck, mosi, miso)
-        self._reader_process.start()
-
-
-class ReadDataCommand(Command[PN532Device, bytearray]):
-
-    @override
-    def run(self: Self,
-            device: PN532Device) -> bytearray:
-        return device.get_data(self._timeout)
-
-    @override
-    def __init__(self,
-                 timeout: Optional[float] = None) -> None:
-        self._timeout: Optional[float] = timeout

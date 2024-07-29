@@ -13,7 +13,7 @@ from tophat.api.message import CommandRequest, CommandResponse, MAX_SEND_RECV_SI
 class TopHatClient:
 
     def send_command(self: Self,
-                     device_id: int,
+                     device_name: str,
                      command: Command[DeviceType, ResultType]) -> ResultType:
         if not self._socket_path.is_socket():
             raise RuntimeError(f'Failed to find tophat socket at {self._socket_path}')
@@ -22,7 +22,7 @@ class TopHatClient:
             try:
                 server_socket.connect(str(self._socket_path))
 
-                request: CommandRequest[DeviceType, ResultType] = CommandRequest(device_id, command)
+                request: CommandRequest[DeviceType, ResultType] = CommandRequest(device_name, command)
                 server_socket.sendall(pickle.dumps(request))
                 response: Any = pickle.loads(server_socket.recv(MAX_SEND_RECV_SIZE))
 

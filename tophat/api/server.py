@@ -29,7 +29,7 @@ LOGGER.addHandler(logging.StreamHandler(sys.stdout))
 HAT_SOCKET_PATH: Path = Path('/var/run/hatbox.socket')
 
 DeviceLockPair = Tuple[DeviceBase, mp_sync.Lock]
-DeviceMap = Dict[int, DeviceLockPair]
+DeviceMap = Dict[str, DeviceLockPair]
 HatMap = Dict[Type[HackableHat], "HatBox"]
 
 BaseDeviceType = TypeVar('BaseDeviceType', bound=DeviceBase)
@@ -81,21 +81,17 @@ class TopHatServer:
         return self._socket_path
 
     def register_device(self: Self,
-                        device_constructor: Callable[Concatenate[int, DeviceExtraArgs], BaseDeviceType],
+                        device_constructor: Callable[Concatenate[str, DeviceExtraArgs], BaseDeviceType],
+                        device_name: str,
                         *args: DeviceExtraArgs.args,
-                        device_id: Optional[int] = None,
-                        **kwargs: DeviceExtraArgs.kwargs) -> int:
-        if device_id is not None:
-            if device_id in self._device_map:
-                raise ValueError(f'Device {device_id} already registered')
-        else:
-            device_id = max(self._device_map.keys(), default=0) + 1
-        self._device_map[device_id] = device_constructor(device_id, *args, **kwargs), self._manager.Lock()
-        return device_id
+                        **kwargs: DeviceExtraArgs.kwargs) -> None:
+        if device_name in self._device_map:
+            raise ValueError(f'Device {device_name} already registered')
+        self._device_map[device_name] = device_constructor(device_name, *args, **kwargs), self._manager.Lock()
 
     def get_device(self: Self,
-                   device_id: int) -> Optional[Device]:
-        return self._device_map.get(device_id, None)
+                   device_name: str) -> Optional[Device]:
+        return self._device_map.get(device_name, None)
 
     def register_hat(self: Self,
                      hat: HackableHat) -> None:
@@ -161,7 +157,7 @@ class TopHatServer:
                 LOGGER.error(f'Received unexpected tophat request of type: {type(request)}')
                 return None
 
-            LOGGER.debug(f'Received {type(request.command).__name__} targeting device {hex(request.device_id)}')
+            LOGGER.debug(f'Received {type(request.command).__name__} targeting device {request.device_name}')
             return request
 
         except socket.error as socket_error:
@@ -177,8 +173,8 @@ class TopHatServer:
                         process_pool: mp_pool.Pool,
                         client_socket: socket.socket,
                         request: CommandRequest[DeviceType, ResultType]) -> None:
-        if request.device_id not in self._device_map:
-            LOGGER.error(f'Unknown device ID: {request.device_id}')
+        if request.device_name not in self._device_map:
+            LOGGER.error(f'Unknown device ID: {request.device_name}')
             client_socket.sendall(
                 pickle.dumps(CommandResponse.from_error(ResponseCode.ERROR_INVALID_DEVICE)))
             client_socket.close()
@@ -186,7 +182,7 @@ class TopHatServer:
 
         target_device: BaseDeviceType
         device_lock: mp_sync.Lock
-        target_device, device_lock = self._device_map[request.device_id]
+        target_device, device_lock = self._device_map[request.device_name]
         if isinstance(request.command, AsyncCommand):
             LOGGER.debug(f'Running {type(request.command).__name__} asynchronously on device '
                          f'{hex(target_device.id)}...')
