@@ -52,6 +52,9 @@ if __name__ == '__main__':
     pn532: PN532 = PN532_SPI(SPI(args.sck, args.mosi, args.miso), DigitalInOut(args.cs))
     pn532.SAM_configuration()
 
+    while pn532.read_passive_target(timeout=0.5) is None:
+        pass
+
     for index, file_data_block in enumerate(file_data[i:i + 4] for i in range(0, len(file_data), 4)):
         if not pn532.ntag2xx_write_block(index, file_data_block):
             print(f'Failed to write block {index}', file=sys.stderr)
