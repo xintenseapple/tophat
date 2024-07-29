@@ -146,7 +146,7 @@ class TopHatServer:
         self._device_map: DeviceMap = {}
         self._hat_map: HatMap = {}
 
-        mp.set_start_method('spawn', True)
+        mp.set_start_method('spawn', force=True)
         self._manager: mp_managers.SyncManager = mp.Manager()
 
     @staticmethod

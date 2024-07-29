@@ -32,7 +32,7 @@ class PN532Device(Device):
                  mosi: board.pin.Pin,
                  cs: board.pin.Pin) -> None:
         super().__init__(device_name)
-        mp.set_start_method('spawn')
+        mp.set_start_method('spawn', force=True)
         self._reader_process = ReaderProcess(sck, miso, mosi, cs)
         self._reader_process.start()
 
