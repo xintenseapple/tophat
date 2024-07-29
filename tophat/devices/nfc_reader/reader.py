@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import multiprocessing as mp
+import queue
 import time
 from typing import Optional
 
@@ -16,7 +17,7 @@ from typing_extensions import Self, final, override
 class ReaderProcess(mp.Process):
 
     @property
-    def read_buffer_queue(self: Self) -> mp.Queue[bytearray]:
+    def read_buffer_queue(self: Self) -> queue.Queue[bytearray]:
         return self._read_buffer_queue
 
     def stop(self: Self) -> None:
@@ -46,7 +47,7 @@ class ReaderProcess(mp.Process):
         self._miso: board.pin.Pin = miso
         self._cs: board.pin.Pin = cs
 
-        self._read_buffer_queue: mp.Queue[bytearray] = mp.Queue[bytearray](maxsize=64)
+        self._read_buffer_queue: queue.Queue[bytearray] = mp.Queue(maxsize=64)
         self._stop_event = mp.Event()
 
     class _Stopped(Exception):
