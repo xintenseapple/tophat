@@ -6,6 +6,6 @@ from tophat.devices.printer import PrintCommand
 
 client: TopHatClient = TopHatClient(Path('/srv/tophat/test.socket'))
 
-client.send_command(0x1, PrintCommand('HELLO WORLD'))
+client.send_command('printer', PrintCommand('HELLO WORLD'))
 
-client.send_command(0x2, RainbowCommand(15))
+client.send_command('neopixels', RainbowCommand(15))
