@@ -12,7 +12,7 @@ def main() -> None:
     server = TopHatServer(Path('/srv/tophat/test.socket'))
     server.register_device(PrinterDevice, 'printer')
     server.register_device(NeopixelDeviceProxy, 'neopixels', Path('/srv/tophat/neopixel.socket'))
-    server.register_device(PN532Device, 'nfc_reader', board.SCK, board.MISO, board.MOSI, board.D25)
+    server.register_device(PN532Device, 'nfc_reader', board.SCK, board.MOSI, board.MISO, board.D25)
     server.start()
 
 

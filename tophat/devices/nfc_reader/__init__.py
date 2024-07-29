@@ -4,7 +4,6 @@ import multiprocessing as mp
 from typing import Any, Optional, Tuple, Type
 
 import board
-from digitalio import DigitalInOut
 from typing_extensions import Self, final, override
 
 from tophat.api.device import Command, Device
@@ -28,12 +27,12 @@ class PN532Device(Device):
     def __init__(self,
                  device_name: str,
                  sck: board.pin.Pin,
-                 miso: board.pin.Pin,
                  mosi: board.pin.Pin,
+                 miso: board.pin.Pin,
                  cs: board.pin.Pin) -> None:
         super().__init__(device_name)
         mp.set_start_method('spawn', force=True)
-        self._reader_process = ReaderProcess(sck, miso, mosi, cs)
+        self._reader_process = ReaderProcess(sck, mosi, miso, cs)
         self._reader_process.start()
 
 

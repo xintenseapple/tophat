@@ -37,8 +37,8 @@ class ReaderProcess(mp.Process):
     @override
     def __init__(self,
                  sck: board.pin.Pin,
-                 miso: board.pin.Pin,
                  mosi: board.pin.Pin,
+                 miso: board.pin.Pin,
                  cs: board.pin.Pin) -> None:
         super().__init__(name='nfc_reader',
                          daemon=True)

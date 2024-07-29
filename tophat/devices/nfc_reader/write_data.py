@@ -5,10 +5,9 @@ import sys
 from os import stat_result
 from pathlib import Path
 
+import board
 from adafruit_pn532.adafruit_pn532 import PN532
 from adafruit_pn532.spi import PN532_SPI
-
-import board
 from busio import SPI
 from digitalio import DigitalInOut
 
@@ -23,12 +22,12 @@ if __name__ == '__main__':
     parser.add_argument('--sck',
                         type=board.pin.Pin,
                         default=DEFAULT_SCK_PIN)
-    parser.add_argument('--miso',
-                        type=board.pin.Pin,
-                        default=DEFAULT_MISO_PIN)
     parser.add_argument('--mosi',
                         type=board.pin.Pin,
                         default=DEFAULT_MOSI_PIN)
+    parser.add_argument('--miso',
+                        type=board.pin.Pin,
+                        default=DEFAULT_MISO_PIN)
     parser.add_argument('--cs',
                         type=board.pin.Pin,
                         default=DEFAULT_CS_PIN)
@@ -50,10 +49,10 @@ if __name__ == '__main__':
 
     file_data: bytes = file_path.read_bytes()
 
-    pn532: PN532 = PN532_SPI(SPI(args.sck, args.miso, args.mosi), DigitalInOut(args.cs))
+    pn532: PN532 = PN532_SPI(SPI(args.sck, args.mosi, args.miso), DigitalInOut(args.cs))
     pn532.SAM_configuration()
 
-    for index, file_data_block in enumerate(file_data[i:i+4] for i in range(0, len(file_data), 4)):
+    for index, file_data_block in enumerate(file_data[i:i + 4] for i in range(0, len(file_data), 4)):
         if not pn532.ntag2xx_write_block(index, file_data_block):
             print(f'Failed to write block {index}', file=sys.stderr)
             exit(3)
