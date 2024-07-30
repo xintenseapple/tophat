@@ -38,6 +38,4 @@ PyObject *send_command(PyObject *client_pyobj, const uint64_t device_id, PyObjec
     } else {
         return result;
     }
-
-
 }

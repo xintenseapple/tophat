@@ -1,17 +1,8 @@
 #include <signal.h>
 #include <stdio.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <string.h>
 #include <stdlib.h>
-#include <sys/un.h>
-#include <errno.h>
-#include <sys/signal.h>
-#include <wait.h>
 #include <unistd.h>
-#include <sys/stat.h>
 #include <stdbool.h>
-#include <time.h>
 #include <Python.h>
 
 #include "tophat/api/client.h"
@@ -44,12 +35,15 @@ int main(int argc, char *argv[])
 {
     Py_Initialize();
     PyGILState_STATE gil_state = PyGILState_Ensure();
+    printf("WORKS\n");
     tophat_client = get_client("/var/run/hatbox.socket");
+    printf("WORKS\n");
 
     if (tophat_client == NULL) {
         fprintf(stderr, "Failed to create tophat client!\n");
         return -1;
     }
+    printf("WORKS\n");
 
     signal(SIGINT, interrupt_handler);
     while(!stop) { // This might take a while...
@@ -176,8 +170,8 @@ void wrangle_data(char *nfc_card_data, char *flag_buf) {
     format_NFC_data(nfc_card_data);
     printf("gNFC_data: %s\n", gNFC_data);
     printf("tarnation: 0x%x\n", tarnation);
-    printf("a_hacker: %b\n", a_hacker);
-    printf("is_dev: %b\n", is_dev);
+    printf("a_hacker: %d\n", a_hacker);
+    printf("is_dev: %d\n", is_dev);
     handle_token(flag_buf);
 }
 

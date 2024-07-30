@@ -5,7 +5,7 @@
 #pragma once
 
 PyObject *create_color(const char red, const char green, const char blue) {
-    return PyObject_Build("(B, B, B)", red, green, blue);
+    return Py_BuildValue("(B, B, B)", red, green, blue);
 }
 
 PyObject *create_solid_color_command(PyObject *color) {
