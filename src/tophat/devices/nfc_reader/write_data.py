@@ -6,7 +6,7 @@ from os import stat_result
 from pathlib import Path
 
 import board
-from adafruit_pn532.adafruit_pn532 import PN532
+from adafruit_pn532.adafruit_pn532 import PN532, _COMMAND_SAMCONFIGURATION
 from adafruit_pn532.spi import PN532_SPI
 from busio import SPI
 from digitalio import DigitalInOut
@@ -50,7 +50,7 @@ if __name__ == '__main__':
     file_data: bytes = file_path.read_bytes()
 
     pn532: PN532 = PN532_SPI(SPI(args.sck, args.mosi, args.miso), DigitalInOut(args.cs))
-    pn532.SAM_configuration()
+    pn532.call_function(_COMMAND_SAMCONFIGURATION, params=[0x01, 0x14, 0x00])
 
     while pn532.read_passive_target(timeout=0.5) is None:
         pass
