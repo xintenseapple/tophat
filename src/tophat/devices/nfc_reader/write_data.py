@@ -56,8 +56,9 @@ if __name__ == '__main__':
         pass
 
     for index, file_data_block in enumerate(file_data[i:i + 4] for i in range(0, len(file_data), 4)):
-        if not pn532.ntag2xx_write_block(index+0x4, file_data_block.ljust(4, b'\x00')):
-            print(f'Failed to write block {index}', file=sys.stderr)
+        block_num: int = index + 0x4
+        if not pn532.ntag2xx_write_block(block_num, file_data_block.ljust(4, b'\x00')):
+            print(f'Failed to write block {block_num}', file=sys.stderr)
             exit(3)
 
     pn532.power_down()
