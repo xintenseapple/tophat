@@ -50,13 +50,13 @@ if __name__ == '__main__':
     file_data: bytes = file_path.read_bytes()
 
     pn532: PN532 = PN532_SPI(SPI(args.sck, args.mosi, args.miso), DigitalInOut(args.cs))
-    pn532.call_function(_COMMAND_SAMCONFIGURATION, params=[0x01, 0x14, 0x00])
+    pn532.SAM_configuration()
 
     while pn532.read_passive_target(timeout=0.5) is None:
         pass
 
     for index, file_data_block in enumerate(file_data[i:i + 4] for i in range(0, len(file_data), 4)):
-        if not pn532.ntag2xx_write_block(index, file_data_block.ljust(4, b'\x00')):
+        if not pn532.ntag2xx_write_block(index+0x4, file_data_block.ljust(4, b'\x00')):
             print(f'Failed to write block {index}', file=sys.stderr)
             exit(3)
 
