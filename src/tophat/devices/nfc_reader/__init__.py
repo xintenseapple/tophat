@@ -29,11 +29,10 @@ class PN532Device(Device):
                  sck_pin: board.pin.Pin,
                  mosi_pin: board.pin.Pin,
                  miso_pin: board.pin.Pin,
-                 cs_pin: board.pin.Pin,
-                 irq_pin: Optional[board.pin.Pin] = None) -> None:
+                 cs_pin: board.pin.Pin) -> None:
         super().__init__(device_name)
         mp.set_start_method('spawn', force=True)
-        self._reader_process = ReaderProcess(sck_pin, mosi_pin, miso_pin, cs_pin, irq_pin)
+        self._reader_process = ReaderProcess(sck_pin, mosi_pin, miso_pin, cs_pin)
         self._reader_process.start()
 
 

@@ -32,9 +32,6 @@ if __name__ == '__main__':
     parser.add_argument('--cs',
                         type=int,
                         default=DEFAULT_CS_PIN)
-    parser.add_argument('--irq',
-                        type=int,
-                        default=None)
     parser.add_argument('file_path',
                         type=Path)
 

@@ -17,7 +17,7 @@ def main() -> None:
                            Path('/srv/tophat/neopixel.socket'))
     server.register_device(PN532Device,
                            'nfc_reader',
-                           board.SCK, board.MOSI, board.MISO, board.D25, board.D24)
+                           board.SCK, board.MOSI, board.MISO, board.D25)
     server.start()
 
 
