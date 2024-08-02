@@ -18,12 +18,9 @@ RUN useradd --create-home --user-group --shell /bin/bash hatman
 VOLUME /var/run/hatbox.socket
 
 # Add and install tophat Python package
-USER hatman
 RUN mkdir /home/hatman/tophat/
 ADD pyproject.toml README.md requirements.txt src /home/hatman/tophat/
 RUN python3 -m pip install /home/hatman/tophat/
-
-USER root
 RUN chown -R root:hatman /home/hatman/tophat/
 RUN chmod -R 550 /home/hatman/tophat/
 ADD include/tophat/ /usr/include/tophat/
