@@ -60,7 +60,7 @@ if __name__ == '__main__':
     pn532: PN532 = PN532_SPI(spi=SPI(sck_pin, mosi_pin, miso_pin),
                              cs_pin=DigitalInOut(cs_pin),
                              debug=args.debug)
-    pn532.call_function(_COMMAND_SAMCONFIGURATION, params=[0x01, 0x14, 0x00])
+    pn532.call_function(_COMMAND_SAMCONFIGURATION, params=[0x01, 0x00, 0x00])
 
     while pn532.read_passive_target(timeout=5) is None:
         pass
@@ -70,7 +70,7 @@ if __name__ == '__main__':
         if pn532.ntag2xx_write_block(block_num, file_data_block.ljust(4, b'\x00')):
             print(f'Successfully wrote block {block_num}')
         else:
-            print(f'Failed to write block {block_num}, retrying...', file=sys.stderr)
+            print(f'Failed to write block {block_num}', file=sys.stderr)
             exit(3)
 
     pn532.power_down()
