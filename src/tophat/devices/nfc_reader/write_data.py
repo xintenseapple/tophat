@@ -32,6 +32,9 @@ if __name__ == '__main__':
     parser.add_argument('--cs',
                         type=int,
                         default=DEFAULT_CS_PIN)
+    parser.add_argument('--debug',
+                        action='store_true',
+                        default=False)
     parser.add_argument('file_path',
                         type=Path)
 
@@ -55,7 +58,8 @@ if __name__ == '__main__':
     miso_pin: board.pin.Pin = board.pin.Pin(args.miso)
     cs_pin: board.pin.Pin = board.pin.Pin(args.cs)
     pn532: PN532 = PN532_SPI(spi=SPI(sck_pin, mosi_pin, miso_pin),
-                             cs_pin=DigitalInOut(cs_pin))
+                             cs_pin=DigitalInOut(cs_pin),
+                             debug=args.debug)
     pn532.call_function(_COMMAND_SAMCONFIGURATION, params=[0x01, 0x14, 0x00])
 
     while pn532.read_passive_target(timeout=5) is None:
