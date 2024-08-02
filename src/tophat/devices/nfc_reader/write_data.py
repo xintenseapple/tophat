@@ -4,6 +4,7 @@ import argparse
 import sys
 from os import stat_result
 from pathlib import Path
+from typing import Optional
 
 import board
 from adafruit_pn532.adafruit_pn532 import PN532, _COMMAND_SAMCONFIGURATION
@@ -31,6 +32,9 @@ if __name__ == '__main__':
     parser.add_argument('--cs',
                         type=board.pin.Pin,
                         default=DEFAULT_CS_PIN)
+    parser.add_argument('--irq',
+                        type=Optional[board.pin.Pin],
+                        default=None)
     parser.add_argument('file_path',
                         type=Path)
 
@@ -49,7 +53,9 @@ if __name__ == '__main__':
 
     file_data: bytes = file_path.read_bytes()
 
-    pn532: PN532 = PN532_SPI(SPI(args.sck, args.mosi, args.miso), DigitalInOut(args.cs))
+    pn532: PN532 = PN532_SPI(spi=SPI(args.sck, args.mosi, args.miso),
+                             cs_pin=DigitalInOut(args.cs),
+                             irq=DigitalInOut(args.irq) if args.irq else None)
     pn532.SAM_configuration()
 
     while pn532.read_passive_target(timeout=0.5) is None:

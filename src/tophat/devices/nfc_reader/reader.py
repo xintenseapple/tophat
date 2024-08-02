@@ -25,7 +25,9 @@ class ReaderProcess(mp.Process):
 
     @override
     def run(self: Self) -> None:
-        pn532: PN532 = PN532_SPI(SPI(self._sck, self._mosi, self._miso), DigitalInOut(self._cs))
+        pn532: PN532 = PN532_SPI(spi=SPI(self._sck, self._mosi, self._miso),
+                                 cs_pin=DigitalInOut(self._cs),
+                                 irq=DigitalInOut(self._irq) if self._irq else None)
         pn532.low_power = True
         pn532.SAM_configuration()
         while True:
@@ -39,13 +41,15 @@ class ReaderProcess(mp.Process):
                  sck: board.pin.Pin,
                  mosi: board.pin.Pin,
                  miso: board.pin.Pin,
-                 cs: board.pin.Pin) -> None:
+                 cs: board.pin.Pin,
+                 irq: Optional[board.pin.Pin]) -> None:
         super().__init__(name='nfc_reader',
                          daemon=True)
         self._sck: board.pin.Pin = sck
         self._mosi: board.pin.Pin = mosi
         self._miso: board.pin.Pin = miso
         self._cs: board.pin.Pin = cs
+        self._irq: Optional[board.pin.Pin] = irq
 
         self._read_buffer_queue: mp_queue.Queue[bytearray] = mp.Queue(maxsize=64)
         self._stop_event = mp.Event()
@@ -68,7 +72,7 @@ class ReaderProcess(mp.Process):
     @staticmethod
     def _read_data(pn532: PN532) -> bytearray:
         data: bytearray = bytearray()
-        block_num: int = 0
+        block_num: int = 4  # Start at block 4, beginning of user data
         block_data: Optional[bytearray] = pn532.ntag2xx_read_block(block_num)
         while block_data is not None:
             data += block_data
