@@ -26,13 +26,14 @@ class PN532Device(Device):
     @override
     def __init__(self,
                  device_name: str,
-                 sck: board.pin.Pin,
-                 mosi: board.pin.Pin,
-                 miso: board.pin.Pin,
-                 cs: board.pin.Pin) -> None:
+                 sck_pin: board.pin.Pin,
+                 mosi_pin: board.pin.Pin,
+                 miso_pin: board.pin.Pin,
+                 cs_pin: board.pin.Pin,
+                 irq_pin: Optional[board.pin.Pin] = None) -> None:
         super().__init__(device_name)
         mp.set_start_method('spawn', force=True)
-        self._reader_process = ReaderProcess(sck, mosi, miso, cs)
+        self._reader_process = ReaderProcess(sck_pin, mosi_pin, miso_pin, cs_pin, irq_pin)
         self._reader_process.start()
 
 

@@ -7,33 +7,33 @@ from pathlib import Path
 from typing import Optional
 
 import board
-from adafruit_pn532.adafruit_pn532 import PN532, _COMMAND_SAMCONFIGURATION
+from adafruit_pn532.adafruit_pn532 import PN532
 from adafruit_pn532.spi import PN532_SPI
 from busio import SPI
 from digitalio import DigitalInOut
 
-DEFAULT_SCK_PIN: board.pin.Pin = board.SCK
-DEFAULT_MISO_PIN: board.pin.Pin = board.MISO
-DEFAULT_MOSI_PIN: board.pin.Pin = board.MOSI
-DEFAULT_CS_PIN: board.pin.Pin = board.D25
+DEFAULT_SCK_PIN: int = board.SCK.id
+DEFAULT_MISO_PIN: int = board.MISO.id
+DEFAULT_MOSI_PIN: int = board.MOSI.id
+DEFAULT_CS_PIN: int = board.D25.id
 MAX_DATA_SIZE: int = 512
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--sck',
-                        type=board.pin.Pin,
+                        type=int,
                         default=DEFAULT_SCK_PIN)
     parser.add_argument('--mosi',
-                        type=board.pin.Pin,
+                        type=int,
                         default=DEFAULT_MOSI_PIN)
     parser.add_argument('--miso',
-                        type=board.pin.Pin,
+                        type=int,
                         default=DEFAULT_MISO_PIN)
     parser.add_argument('--cs',
-                        type=board.pin.Pin,
+                        type=int,
                         default=DEFAULT_CS_PIN)
     parser.add_argument('--irq',
-                        type=Optional[board.pin.Pin],
+                        type=Optional[int],
                         default=None)
     parser.add_argument('file_path',
                         type=Path)
@@ -53,9 +53,14 @@ if __name__ == '__main__':
 
     file_data: bytes = file_path.read_bytes()
 
-    pn532: PN532 = PN532_SPI(spi=SPI(args.sck, args.mosi, args.miso),
-                             cs_pin=DigitalInOut(args.cs),
-                             irq=DigitalInOut(args.irq) if args.irq else None)
+    sck_pin: board.pin.Pin = board.pin.Pin(args.sck)
+    mosi_pin: board.pin.Pin = board.pin.Pin(args.mosi)
+    miso_pin: board.pin.Pin = board.pin.Pin(args.miso)
+    cs_pin: board.pin.Pin = board.pin.Pin(args.cs)
+    irq_pin: Optional[board.pin.Pin] = board.pin.Pin(args.irq) if args.irq else None
+    pn532: PN532 = PN532_SPI(spi=SPI(sck_pin, mosi_pin, miso_pin),
+                             cs_pin=DigitalInOut(cs_pin),
+                             irq=DigitalInOut(irq_pin) if irq_pin else None)
     pn532.SAM_configuration()
 
     while pn532.read_passive_target(timeout=0.5) is None:

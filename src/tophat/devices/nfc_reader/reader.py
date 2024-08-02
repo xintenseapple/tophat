@@ -25,9 +25,9 @@ class ReaderProcess(mp.Process):
 
     @override
     def run(self: Self) -> None:
-        pn532: PN532 = PN532_SPI(spi=SPI(self._sck, self._mosi, self._miso),
-                                 cs_pin=DigitalInOut(self._cs),
-                                 irq=DigitalInOut(self._irq) if self._irq else None)
+        pn532: PN532 = PN532_SPI(spi=SPI(self._sck_pin, self._mosi_pin, self._miso_pin),
+                                 cs_pin=DigitalInOut(self._cs_pin),
+                                 irq=DigitalInOut(self._irq_pin) if self._irq_pin else None)
         pn532.low_power = True
         pn532.SAM_configuration()
         while True:
@@ -38,18 +38,18 @@ class ReaderProcess(mp.Process):
 
     @override
     def __init__(self,
-                 sck: board.pin.Pin,
-                 mosi: board.pin.Pin,
-                 miso: board.pin.Pin,
-                 cs: board.pin.Pin,
-                 irq: Optional[board.pin.Pin]) -> None:
+                 sck_pin: board.pin.Pin,
+                 mosi_pin: board.pin.Pin,
+                 miso_pin: board.pin.Pin,
+                 cs_pin: board.pin.Pin,
+                 irq_pin: Optional[board.pin.Pin]) -> None:
         super().__init__(name='nfc_reader',
                          daemon=True)
-        self._sck: board.pin.Pin = sck
-        self._mosi: board.pin.Pin = mosi
-        self._miso: board.pin.Pin = miso
-        self._cs: board.pin.Pin = cs
-        self._irq: Optional[board.pin.Pin] = irq
+        self._sck_pin: board.pin.Pin = sck_pin
+        self._mosi_pin: board.pin.Pin = mosi_pin
+        self._miso_pin: board.pin.Pin = miso_pin
+        self._cs_pin: board.pin.Pin = cs_pin
+        self._irq_pin: Optional[board.pin.Pin] = irq_pin
 
         self._read_buffer_queue: mp_queue.Queue[bytearray] = mp.Queue(maxsize=64)
         self._stop_event = mp.Event()
