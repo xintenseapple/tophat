@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Optional
 
 import board
-from adafruit_pn532.adafruit_pn532 import PN532
+from adafruit_pn532.adafruit_pn532 import PN532, _COMMAND_SAMCONFIGURATION
 from adafruit_pn532.spi import PN532_SPI
 from busio import SPI
 from digitalio import DigitalInOut
@@ -61,18 +61,17 @@ if __name__ == '__main__':
     pn532: PN532 = PN532_SPI(spi=SPI(sck_pin, mosi_pin, miso_pin),
                              cs_pin=DigitalInOut(cs_pin),
                              irq=DigitalInOut(irq_pin) if irq_pin else None)
-    pn532.SAM_configuration()
+    pn532.call_function(_COMMAND_SAMCONFIGURATION, params=[0x01, 0x14, 0x00])
 
-    while pn532.read_passive_target(timeout=0.5) is None:
+    while pn532.read_passive_target(timeout=5) is None:
         pass
 
     for index, file_data_block in enumerate(file_data[i:i + 4] for i in range(0, len(file_data), 4)):
         block_num: int = index + 0x4
-        if pn532.ntag2xx_write_block(block_num, file_data_block.ljust(4, b'\x00')):
-            print(f'Successfully wrote block {block_num}')
-        else:
-            print(f'Failed to write block {block_num}', file=sys.stderr)
-            exit(3)
+        while not pn532.ntag2xx_write_block(block_num, file_data_block.ljust(4, b'\x00')):
+            print(f'Failed to write block {block_num}, retrying...', file=sys.stderr)
+
+        print(f'Successfully wrote block {block_num}')
 
     pn532.power_down()
     print(f'Successfully wrote {hex(file_stat.st_size)} bytes to NFC card')
