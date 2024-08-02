@@ -54,10 +54,8 @@ if __name__ == '__main__':
     mosi_pin: board.pin.Pin = board.pin.Pin(args.mosi)
     miso_pin: board.pin.Pin = board.pin.Pin(args.miso)
     cs_pin: board.pin.Pin = board.pin.Pin(args.cs)
-    irq_pin: Optional[board.pin.Pin] = board.pin.Pin(args.irq) if args.irq else None
     pn532: PN532 = PN532_SPI(spi=SPI(sck_pin, mosi_pin, miso_pin),
-                             cs_pin=DigitalInOut(cs_pin),
-                             irq=DigitalInOut(irq_pin) if irq_pin else None)
+                             cs_pin=DigitalInOut(cs_pin))
     pn532.call_function(_COMMAND_SAMCONFIGURATION, params=[0x01, 0x14, 0x00])
 
     while pn532.read_passive_target(timeout=5) is None:
