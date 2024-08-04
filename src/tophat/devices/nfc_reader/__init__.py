@@ -6,7 +6,6 @@ from typing import Any, Callable, Optional, Set, Type
 from typing_extensions import Concatenate, Self, final, override
 
 from tophat.api.device import Command, Device, DeviceExtraParams
-from tophat.devices.nfc_reader.reader import ReaderProcess
 
 
 class PN532Device(Device, abc.ABC):
