@@ -5,10 +5,14 @@ import sys
 from os import stat_result
 from pathlib import Path
 
-from adafruit_blinka.agnostic import detector
+from adafruit_platformdetect import Detector
 
-if detector.board.any_raspberry_pi_40_pin:
+if Detector().board.any_raspberry_pi_40_pin:
     import adafruit_blinka.board.raspberrypi.raspi_40pin as board
+else:
+    print('Cannot run NFC writer on non-rpi device', file=sys.stderr)
+    exit(-1)
+
 from adafruit_pn532.adafruit_pn532 import PN532, _COMMAND_SAMCONFIGURATION
 from adafruit_pn532.spi import PN532_SPI
 from busio import SPI

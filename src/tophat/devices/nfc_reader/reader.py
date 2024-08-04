@@ -5,7 +5,7 @@ import multiprocessing.queues as mp_queue
 import time
 from typing import Optional
 
-import adafruit_blinka.board.raspberrypi.raspi_40pin as board
+from tophat.api.pin import Pin
 from adafruit_pn532.adafruit_pn532 import PN532
 from adafruit_pn532.spi import PN532_SPI
 from busio import SPI
@@ -37,16 +37,16 @@ class ReaderProcess(mp.Process):
 
     @override
     def __init__(self,
-                 sck_pin: board.pin.Pin,
-                 mosi_pin: board.pin.Pin,
-                 miso_pin: board.pin.Pin,
-                 cs_pin: board.pin.Pin) -> None:
+                 sck_pin: Pin,
+                 mosi_pin: Pin,
+                 miso_pin: Pin,
+                 cs_pin: Pin) -> None:
         super().__init__(name='nfc_reader',
                          daemon=True)
-        self._sck_pin: board.pin.Pin = sck_pin
-        self._mosi_pin: board.pin.Pin = mosi_pin
-        self._miso_pin: board.pin.Pin = miso_pin
-        self._cs_pin: board.pin.Pin = cs_pin
+        self._sck_pin: Pin = sck_pin
+        self._mosi_pin: Pin = mosi_pin
+        self._miso_pin: Pin = miso_pin
+        self._cs_pin: Pin = cs_pin
 
         self._read_buffer_queue: mp_queue.Queue[bytearray] = mp.Queue(maxsize=64)
         self._stop_event = mp.Event()

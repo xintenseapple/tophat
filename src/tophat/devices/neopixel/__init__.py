@@ -14,10 +14,7 @@ from types import FrameType, TracebackType
 from typing import (Any, Callable, Dict, Generator, Iterable, Iterator, List, Optional, Sequence, Set, SupportsIndex,
                     Tuple, Type, TypeVar, Union)
 
-from adafruit_blinka.agnostic import detector
-
-if detector.board.any_raspberry_pi_40_pin:
-    import adafruit_blinka.board.raspberrypi.raspi_40pin as board
+from tophat.api.pin import Pin
 import neopixel
 from typing_extensions import Self, final, overload, override
 
@@ -85,7 +82,7 @@ class NeopixelDevice(Device, Sequence[ColorTuple]):
     @override
     def __init__(self,
                  device_name: str,
-                 pin: board.pin.Pin,
+                 pin: Pin,
                  num_leds: int) -> None:
         super().__init__(device_name)
         self._pixels: neopixel.NeoPixel = neopixel.NeoPixel(pin, num_leds)

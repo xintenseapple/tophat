@@ -3,9 +3,9 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from adafruit_blinka.agnostic import detector
+from adafruit_platformdetect import Detector
 
-if detector.board.any_raspberry_pi_40_pin:
+if Detector().board.any_raspberry_pi_40_pin:
     import adafruit_blinka.board.raspberrypi.raspi_40pin as board
 else:
     print('Cannot run server on non-rpi device', file=sys.stderr)

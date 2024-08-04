@@ -3,10 +3,7 @@ from __future__ import annotations
 import multiprocessing as mp
 from typing import Any, Optional, Set, Type
 
-from adafruit_blinka.agnostic import detector
-
-if detector.board.any_raspberry_pi_40_pin:
-    import adafruit_blinka.board.raspberrypi.raspi_40pin as board
+from tophat.api.pin import Pin
 from typing_extensions import Self, final, override
 
 from tophat.api.device import Command, Device
@@ -29,10 +26,10 @@ class PN532Device(Device):
     @override
     def __init__(self,
                  device_name: str,
-                 sck_pin: board.pin.Pin,
-                 mosi_pin: board.pin.Pin,
-                 miso_pin: board.pin.Pin,
-                 cs_pin: board.pin.Pin) -> None:
+                 sck_pin: Pin,
+                 mosi_pin: Pin,
+                 miso_pin: Pin,
+                 cs_pin: Pin) -> None:
         super().__init__(device_name)
         mp.set_start_method('spawn', force=True)
         self._reader_process = ReaderProcess(sck_pin, mosi_pin, miso_pin, cs_pin)

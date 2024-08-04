@@ -4,20 +4,12 @@ import multiprocessing as mp
 import multiprocessing.synchronize as mp_sync
 import select
 import socket
-import sys
 from argparse import ArgumentParser
 from pathlib import Path
 
-from adafruit_blinka.agnostic import detector
-
-if detector.board.any_raspberry_pi_40_pin:
-    import adafruit_blinka.board.raspberrypi.raspi_40pin as board
-else:
-    print('Cannot run server on non-rpi device', file=sys.stderr)
-    exit(-1)
-
 from typing_extensions import Self, final, override
 
+from tophat.api.pin import Pin
 from tophat.devices.neopixel import NeopixelCommand, NeopixelDevice
 
 DEFAULT_SOCKET_PATH: Path = Path('/srv/tophat/neopixel.socket')
@@ -60,10 +52,10 @@ class NeopixelServer:
     @override
     def __init__(self,
                  socket_path: Path,
-                 pin: board.pin.Pin,
+                 pin: Pin,
                  num_leds: int) -> None:
         self._socket_path: Path = socket_path
-        self._pin: board.pin.Pin = pin
+        self._pin: Pin = pin
         self._num_leds: int = num_leds
 
         self._lock: mp_sync.Lock = mp.Lock()
@@ -76,7 +68,7 @@ if __name__ == '__main__':
     arg_parser.add_argument('num_leds', type=int)
 
     args = arg_parser.parse_args()
-    server: NeopixelServer = NeopixelServer(DEFAULT_SOCKET_PATH, board.pin.Pin(args.pin), args.num_leds)
+    server: NeopixelServer = NeopixelServer(DEFAULT_SOCKET_PATH, Pin(args.pin), args.num_leds)
 
     try:
         server.start()

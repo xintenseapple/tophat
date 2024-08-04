@@ -2,10 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Set, Type, final
 
-from adafruit_blinka.agnostic import detector
-
-if detector.board.any_raspberry_pi_40_pin:
-    import adafruit_blinka.board.raspberrypi.raspi_40pin as board
+from tophat.api.pin import Pin
 from digitalio import DigitalInOut
 from typing_extensions import Self, override
 
@@ -32,7 +29,7 @@ class DigitalSwitchDevice(Device):
     @override
     def __init__(self,
                  device_name: str,
-                 pin: board.pin.Pin) -> None:
+                 pin: Pin) -> None:
         super().__init__(device_name)
         self._digital_io = DigitalInOut(pin)
 
