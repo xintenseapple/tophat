@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-import adafruit_platformdetect
 from typing_extensions import Self, final, override
 
-if adafruit_platformdetect.Detector().board.any_raspberry_pi_40_pin:
+try:
     import adafruit_blinka.board.raspberrypi.raspi_40pin as board
 
     Pin = board.pin.Pin
-else:
+
+except ImportError:
 
     @final
     class Pin:
