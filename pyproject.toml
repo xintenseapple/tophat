@@ -5,12 +5,10 @@ description = 'Code to run and manage Dockerized CTF-style challenges for HackMy
 authors = [{name = 'Evan Hellman'}]
 readme = 'README.md'
 requires-python = '>= 3.10'
-dependencies = [
-    'typing_extensions~=4.7.1',
-    'docker~=7.1.0',
-    'adafruit-circuitpython-neopixel~=6.3.11',
-    'adafruit-circuitpython-pn532~=2.4.1'
-]
+dynamic=['dependencies']
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
 
 [build-system]
 requires = ['setuptools >= 61.0']
