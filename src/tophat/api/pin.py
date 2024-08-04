@@ -7,7 +7,7 @@ try:
 
     Pin = board.pin.Pin
 
-except ImportError:
+except (ImportError, RuntimeError):
 
     @final
     class Pin:
