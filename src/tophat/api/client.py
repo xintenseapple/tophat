@@ -46,4 +46,6 @@ class TopHatClient:
     @override
     def __init__(self,
                  socket_path: Path) -> None:
+        if not socket_path.is_socket():
+            raise RuntimeError(f'Failed to find tophat socket at {socket_path}')
         self._socket_path: Path = socket_path
