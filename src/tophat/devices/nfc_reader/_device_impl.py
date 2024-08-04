@@ -1,6 +1,16 @@
 from __future__ import annotations
 
-from typing_extensions import final, override
+import multiprocessing as mp
+import multiprocessing.queues as mp_queue
+import time
+from typing import Optional
+
+import board
+from adafruit_pn532.adafruit_pn532 import PN532
+from adafruit_pn532.spi import PN532_SPI
+from busio import SPI
+from digitalio import DigitalInOut
+from typing_extensions import Self, final, override
 
 from tophat.devices.nfc_reader import PN532Device
 
@@ -25,21 +35,6 @@ class PN532DeviceImpl(PN532Device):
         mp.set_start_method('spawn', force=True)
         self._reader_process = ReaderProcess(sck_pin, mosi_pin, miso_pin, cs_pin)
         self._reader_process.start()
-
-
-from __future__ import annotations
-
-import multiprocessing as mp
-import multiprocessing.queues as mp_queue
-import time
-from typing import Optional
-
-import board
-from adafruit_pn532.adafruit_pn532 import PN532
-from adafruit_pn532.spi import PN532_SPI
-from busio import SPI
-from digitalio import DigitalInOut
-from typing_extensions import Self, final, override
 
 
 @final
