@@ -4,10 +4,18 @@ import multiprocessing as mp
 import multiprocessing.synchronize as mp_sync
 import select
 import socket
+import sys
 from argparse import ArgumentParser
 from pathlib import Path
 
-import adafruit_blinka.board.raspberrypi.raspi_40pin as board
+from adafruit_blinka.agnostic import detector
+
+if detector.board.any_raspberry_pi_40_pin:
+    import adafruit_blinka.board.raspberrypi.raspi_40pin as board
+else:
+    print('Cannot run server on non-rpi device', file=sys.stderr)
+    exit(-1)
+
 from typing_extensions import Self, final, override
 
 from tophat.devices.neopixel import NeopixelCommand, NeopixelDevice

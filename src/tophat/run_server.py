@@ -1,6 +1,15 @@
+from __future__ import annotations
+
+import sys
 from pathlib import Path
 
-import adafruit_blinka.board.raspberrypi.raspi_40pin as board
+from adafruit_blinka.agnostic import detector
+
+if detector.board.any_raspberry_pi_40_pin:
+    import adafruit_blinka.board.raspberrypi.raspi_40pin as board
+else:
+    print('Cannot run server on non-rpi device', file=sys.stderr)
+    exit(-1)
 
 from tophat.api.server import TopHatServer
 from tophat.devices.neopixel import NeopixelDeviceProxy

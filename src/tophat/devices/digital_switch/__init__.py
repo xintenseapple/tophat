@@ -1,7 +1,11 @@
-from time import sleep
+from __future__ import annotations
+
 from typing import Any, Set, Type, final
 
-import adafruit_blinka.board.raspberrypi.raspi_40pin as board
+from adafruit_blinka.agnostic import detector
+
+if detector.board.any_raspberry_pi_40_pin:
+    import adafruit_blinka.board.raspberrypi.raspi_40pin as board
 from digitalio import DigitalInOut
 from typing_extensions import Self, override
 

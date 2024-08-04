@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import multiprocessing as mp
-from typing import Any, Optional, Set, Tuple, Type
+from typing import Any, Optional, Set, Type
 
-import adafruit_blinka.board.raspberrypi.raspi_40pin as board
+from adafruit_blinka.agnostic import detector
+
+if detector.board.any_raspberry_pi_40_pin:
+    import adafruit_blinka.board.raspberrypi.raspi_40pin as board
 from typing_extensions import Self, final, override
 
 from tophat.api.device import Command, Device

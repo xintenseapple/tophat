@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from time import sleep
-from typing import Any, Set, Tuple, Type, final
+from typing import Any, Set, Type, final
 
 from typing_extensions import Self, override
 
@@ -16,7 +18,7 @@ class PrinterDevice(Device):
     @classmethod
     @override
     def supported_commands(cls: Type[Self]) -> Set[Type[Command[Self, Any]]]:
-        return {PrintCommand,}
+        return {PrintCommand, }
 
 
 class PrintCommand(AsyncCommand[PrinterDevice]):

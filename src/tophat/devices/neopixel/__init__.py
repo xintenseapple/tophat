@@ -12,10 +12,12 @@ import time
 from pathlib import Path
 from types import FrameType, TracebackType
 from typing import (Any, Callable, Dict, Generator, Iterable, Iterator, List, Optional, Sequence, Set, SupportsIndex,
-                    Tuple,
-                    Type, TypeVar, Union)
+                    Tuple, Type, TypeVar, Union)
 
-import adafruit_blinka.board.raspberrypi.raspi_40pin as board
+from adafruit_blinka.agnostic import detector
+
+if detector.board.any_raspberry_pi_40_pin:
+    import adafruit_blinka.board.raspberrypi.raspi_40pin as board
 import neopixel
 from typing_extensions import Self, final, overload, override
 
