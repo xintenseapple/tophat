@@ -11,14 +11,15 @@ import socket
 import sys
 import uuid
 from pathlib import Path
-from typing import Any, Callable, Concatenate, Dict, Generic, Optional, ParamSpec, Tuple, Type, TypeVar
+from typing import Any, Dict, Generic, Optional, Tuple, Type, TypeVar
 
 from docker import DockerClient
 from docker.errors import DockerException
 from docker.models.containers import Container
 from typing_extensions import Self, final, override
 
-from tophat.api.device import AsyncCommand, Device, DeviceBase, DeviceType, ResultType, UnsupportedCommandError
+from tophat.api.device import (AsyncCommand, Device, DeviceBase, DeviceExtraParams, DeviceType, ResultType,
+                               UnsupportedCommandError)
 from tophat.api.hat import HackableHat
 from tophat.api.message import CommandRequest, CommandResponse, MAX_SEND_RECV_SIZE, ResponseCode
 
@@ -36,8 +37,6 @@ BaseDeviceType = TypeVar('BaseDeviceType', bound=DeviceBase)
 HatType = TypeVar('HatType', bound=HackableHat)
 ExceptionType = TypeVar("ExceptionType",
                         bound=BaseException)
-
-DeviceExtraArgs = ParamSpec("DeviceExtraArgs")
 
 
 def _supress_sigint() -> None:
@@ -81,13 +80,14 @@ class TopHatServer:
         return self._socket_path
 
     def register_device(self: Self,
-                        device_constructor: Callable[Concatenate[str, DeviceExtraArgs], BaseDeviceType],
+                        device_type: Type[BaseDeviceType],
                         device_name: str,
-                        *args: DeviceExtraArgs.args,
-                        **kwargs: DeviceExtraArgs.kwargs) -> None:
+                        *args: DeviceExtraParams.args,
+                        **kwargs: DeviceExtraParams.kwargs) -> None:
         if device_name in self._device_map:
             raise ValueError(f'Device {device_name} already registered')
-        self._device_map[device_name] = device_constructor(device_name, *args, **kwargs), self._manager.Lock()
+
+        self._device_map[device_name] = device_type.from_impl(device_name, *args, **kwargs), self._manager.Lock()
 
     def get_device(self: Self,
                    device_name: str) -> Optional[Device]:

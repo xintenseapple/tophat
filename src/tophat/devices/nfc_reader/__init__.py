@@ -1,39 +1,33 @@
 from __future__ import annotations
 
-import multiprocessing as mp
-from typing import Any, Optional, Set, Type
+import abc
+from typing import Any, Callable, Optional, Set, Type
 
-from tophat.api.pin import Pin
-from typing_extensions import Self, final, override
+from typing_extensions import Concatenate, Self, final, override
 
-from tophat.api.device import Command, Device
+from tophat.api.device import Command, Device, DeviceExtraParams
 from tophat.devices.nfc_reader.reader import ReaderProcess
 
 
-@final
-class PN532Device(Device):
+class PN532Device(Device, abc.ABC):
 
+    @abc.abstractmethod
     def read_data(self: Self,
                   timeout: Optional[float] = None) -> Optional[bytearray]:
-        return self._reader_process.read_buffer_queue.get(block=True,
-                                                          timeout=timeout)
+        raise NotImplementedError()
 
     @classmethod
+    @final
     @override
     def supported_commands(cls: Type[Self]) -> Set[Type[Command[Self, Any]]]:
-        return {ReadDataCommand,}
+        return {ReadDataCommand, }
 
+    @classmethod
+    @final
     @override
-    def __init__(self,
-                 device_name: str,
-                 sck_pin: Pin,
-                 mosi_pin: Pin,
-                 miso_pin: Pin,
-                 cs_pin: Pin) -> None:
-        super().__init__(device_name)
-        mp.set_start_method('spawn', force=True)
-        self._reader_process = ReaderProcess(sck_pin, mosi_pin, miso_pin, cs_pin)
-        self._reader_process.start()
+    def _get_impl_builder(cls: Type[Self]) -> Callable[Concatenate[str, DeviceExtraParams], Self]:
+        from tophat.devices.nfc_reader._device_impl import PN532DeviceImpl
+        return PN532DeviceImpl
 
 
 class ReadDataCommand(Command[PN532Device, bytearray]):

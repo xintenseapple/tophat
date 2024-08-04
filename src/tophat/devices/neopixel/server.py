@@ -9,7 +9,7 @@ from pathlib import Path
 
 from typing_extensions import Self, final, override
 
-from tophat.api.pin import Pin
+import board
 from tophat.devices.neopixel import NeopixelCommand, NeopixelDevice
 
 DEFAULT_SOCKET_PATH: Path = Path('/srv/tophat/neopixel.socket')
@@ -20,7 +20,8 @@ MAX_SEND_RECV_SIZE: int = 512
 class NeopixelServer:
 
     def start(self: Self) -> None:
-        neopixel_device: NeopixelDevice = NeopixelDevice('neopixels', self._pin, self._num_leds)
+        neopixel_device: NeopixelDevice = NeopixelDevice.from_impl('neopixels',
+                                                                   self._pin, self._num_leds)
         if self._socket_path.is_socket():
             self._socket_path.unlink()
             print(f'Removing old socket at {self._socket_path}', flush=True)
@@ -52,10 +53,10 @@ class NeopixelServer:
     @override
     def __init__(self,
                  socket_path: Path,
-                 pin: Pin,
+                 pin: board.pin.Pin,
                  num_leds: int) -> None:
         self._socket_path: Path = socket_path
-        self._pin: Pin = pin
+        self._pin: board.pin.Pin = pin
         self._num_leds: int = num_leds
 
         self._lock: mp_sync.Lock = mp.Lock()
@@ -68,7 +69,7 @@ if __name__ == '__main__':
     arg_parser.add_argument('num_leds', type=int)
 
     args = arg_parser.parse_args()
-    server: NeopixelServer = NeopixelServer(DEFAULT_SOCKET_PATH, Pin(args.pin), args.num_leds)
+    server: NeopixelServer = NeopixelServer(DEFAULT_SOCKET_PATH, board.pin.Pin(args.pin), args.num_leds)
 
     try:
         server.start()

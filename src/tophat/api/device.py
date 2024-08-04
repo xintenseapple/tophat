@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import abc
 import multiprocessing.synchronize as mp_sync
-from typing import Any, Generic, Set, Type, TypeVar
+from typing import Any, Callable, Generic, Set, Type, TypeVar
 
-from typing_extensions import Self, final, override
+from typing_extensions import Concatenate, ParamSpec, Self, final, override
 
 DeviceType = TypeVar('DeviceType', bound='Device')
 ResultType = TypeVar('ResultType')
+DeviceExtraParams = ParamSpec("DeviceImplParams")
 
 
 @final
@@ -26,9 +27,23 @@ class DeviceBase(abc.ABC):
 
     @final
     @property
-    def name(self) -> str:
+    def name(self: Self) -> str:
         return self._name
 
+    @classmethod
+    @final
+    def from_impl(cls: Type[Self],
+                  device_name: str,
+                  *args: DeviceExtraParams.args,
+                  **kwargs: DeviceExtraParams.kwargs) -> Self:
+        return cls._get_impl_builder()(device_name, *args, **kwargs)
+
+    @classmethod
+    @abc.abstractmethod
+    def _get_impl_builder(cls: Type[Self]) -> Callable[Concatenate[str, DeviceExtraParams], Self]:
+        raise NotImplementedError()
+
+    @override
     def __init__(self,
                  device_name: str) -> None:
         self._name: str = device_name
@@ -46,15 +61,15 @@ class Device(DeviceBase, abc.ABC):
         else:
             raise UnsupportedCommandError(self, command)
 
-    @override
-    def __init__(self,
-                 device_name: str):
-        super().__init__(device_name)
-
     @classmethod
     @abc.abstractmethod
     def supported_commands(cls: Type[Self]) -> Set[Type[Command[Type[Self], Any]], ...]:
         raise NotImplementedError()
+
+    @override
+    def __init__(self,
+                 device_name: str):
+        super().__init__(device_name)
 
 
 class DeviceProxy(Generic[DeviceType], DeviceBase, abc.ABC):
@@ -64,6 +79,12 @@ class DeviceProxy(Generic[DeviceType], DeviceBase, abc.ABC):
             lock: mp_sync.Lock,
             command: Command[DeviceType, ResultType]) -> ResultType:
         raise NotImplementedError()
+
+    @classmethod
+    @final
+    @override
+    def _get_impl_builder(cls: Type[Self]) -> Callable[Concatenate[str, DeviceExtraParams], Self]:
+        return cls
 
 
 class Command(Generic[DeviceType, ResultType], abc.ABC):

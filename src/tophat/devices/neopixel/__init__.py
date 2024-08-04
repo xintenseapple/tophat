@@ -11,14 +11,12 @@ import socket
 import time
 from pathlib import Path
 from types import FrameType, TracebackType
-from typing import (Any, Callable, Dict, Generator, Iterable, Iterator, List, Optional, Sequence, Set, SupportsIndex,
-                    Tuple, Type, TypeVar, Union)
+from typing import (Any, Callable, Concatenate, Dict, Generator, Iterable, Iterator, List, Optional, Sequence, Set,
+                    SupportsIndex, Tuple, Type, TypeVar, Union)
 
-from tophat.api.pin import Pin
-import neopixel
 from typing_extensions import Self, final, overload, override
 
-from tophat.api.device import AsyncCommand, Device, DeviceProxy
+from tophat.api.device import AsyncCommand, Device, DeviceExtraParams, DeviceProxy
 
 ColorTuple = Tuple[int, int, int]
 ExceptionType = TypeVar("ExceptionType",
@@ -64,28 +62,29 @@ class Duration(contextlib.AbstractContextManager):
         return exc_type is None or exc_type == Duration._TimedOutError
 
 
-@final
-class NeopixelDevice(Device, Sequence[ColorTuple]):
+class NeopixelDevice(Device, Sequence[ColorTuple], abc.ABC):
 
-    def fill(self,
+    @abc.abstractmethod
+    def fill(self: Self,
              color: ColorTuple):
-        self._pixels.fill(color)
+        raise NotImplementedError()
 
-    def show(self):
-        self._pixels.show()
+    @abc.abstractmethod
+    def show(self: Self):
+        raise NotImplementedError()
 
     @classmethod
+    @final
     @override
     def supported_commands(cls: Type[Self]) -> Set[Type[NeopixelCommand]]:
         return {SolidColorCommand, BlinkCommand, PulseCommand, RainbowCommand, RainbowWaveCommand}
 
+    @classmethod
+    @final
     @override
-    def __init__(self,
-                 device_name: str,
-                 pin: Pin,
-                 num_leds: int) -> None:
-        super().__init__(device_name)
-        self._pixels: neopixel.NeoPixel = neopixel.NeoPixel(pin, num_leds)
+    def _get_impl_builder(cls: Type[Self]) -> Callable[Concatenate[str, DeviceExtraParams], Self]:
+        from tophat.devices.neopixel._device_impl import NeopixelDeviceImpl
+        return NeopixelDeviceImpl
 
     @overload
     def __getitem__(self,
@@ -98,9 +97,10 @@ class NeopixelDevice(Device, Sequence[ColorTuple]):
         ...
 
     @override
+    @abc.abstractmethod
     def __getitem__(self,
                     item: Union[SupportsIndex, slice]) -> Union[ColorTuple, List[ColorTuple]]:
-        return self._pixels[item]
+        raise NotImplementedError()
 
     @overload
     def __setitem__(self,
@@ -114,18 +114,21 @@ class NeopixelDevice(Device, Sequence[ColorTuple]):
                     value: Iterable[ColorTuple]) -> None:
         ...
 
+    @abc.abstractmethod
     def __setitem__(self,
                     key: Union[SupportsIndex, slice],
                     value: Union[ColorTuple, Iterable[ColorTuple]]) -> None:
-        self._pixels[key] = value
+        raise NotImplementedError()
 
     @override
+    @abc.abstractmethod
     def __len__(self) -> int:
-        return len(self._pixels)
+        raise NotImplementedError()
 
     @override
+    @abc.abstractmethod
     def __iter__(self) -> Iterator[ColorTuple]:
-        return iter(self._pixels)
+        raise NotImplementedError()
 
 
 @final

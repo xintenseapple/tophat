@@ -1,37 +1,38 @@
 from __future__ import annotations
 
-from typing import Any, Set, Type, final
+import abc
+from typing import Any, Callable, Set, Type
 
-from tophat.api.pin import Pin
-from digitalio import DigitalInOut
-from typing_extensions import Self, override
+from typing_extensions import Concatenate, Self, final, override
 
-from tophat.api.device import AsyncCommand, Command, Device
+from tophat.api.device import AsyncCommand, Command, Device, DeviceExtraParams
 
 
-@final
-class DigitalSwitchDevice(Device):
+class DigitalSwitchDevice(Device, abc.ABC):
 
     @property
+    @abc.abstractmethod
     def state(self: Self) -> bool:
-        return self._digital_io.value
+        raise NotImplementedError()
 
     @state.setter
+    @abc.abstractmethod
     def state(self: Self,
               value: bool) -> None:
-        self._digital_io.value = value
+        raise NotImplementedError()
 
     @classmethod
+    @final
     @override
     def supported_commands(cls: Type[Self]) -> Set[Type[Command[Self, Any]]]:
         return {EnableCommand, DisableCommand, ToggleCommand}
 
+    @classmethod
+    @final
     @override
-    def __init__(self,
-                 device_name: str,
-                 pin: Pin) -> None:
-        super().__init__(device_name)
-        self._digital_io = DigitalInOut(pin)
+    def _get_impl_builder(cls: Type[Self]) -> Callable[Concatenate[str, DeviceExtraParams], Self]:
+        from tophat.devices.digital_switch._device_impl import DigitalSwitchDeviceImpl
+        return DigitalSwitchDeviceImpl
 
 
 @final
