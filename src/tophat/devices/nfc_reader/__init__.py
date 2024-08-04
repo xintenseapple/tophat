@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import multiprocessing as mp
-from typing import Any, Optional, Tuple, Type
+from typing import Any, Optional, Set, Tuple, Type
 
 import adafruit_blinka.board.raspberrypi.raspi_40pin as board
 from typing_extensions import Self, final, override
@@ -20,8 +20,8 @@ class PN532Device(Device):
 
     @classmethod
     @override
-    def supported_commands(cls: Type[Self]) -> Tuple[Type[Command[Self, Any]], ...]:
-        return (ReadDataCommand,)
+    def supported_commands(cls: Type[Self]) -> Set[Type[Command[Self, Any]]]:
+        return {ReadDataCommand,}
 
     @override
     def __init__(self,

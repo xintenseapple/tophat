@@ -11,7 +11,8 @@ import socket
 import time
 from pathlib import Path
 from types import FrameType, TracebackType
-from typing import (Any, Callable, Dict, Generator, Iterable, Iterator, List, Optional, Sequence, SupportsIndex, Tuple,
+from typing import (Any, Callable, Dict, Generator, Iterable, Iterator, List, Optional, Sequence, Set, SupportsIndex,
+                    Tuple,
                     Type, TypeVar, Union)
 
 import adafruit_blinka.board.raspberrypi.raspi_40pin as board
@@ -76,8 +77,8 @@ class NeopixelDevice(Device, Sequence[ColorTuple]):
 
     @classmethod
     @override
-    def supported_commands(cls: Type[Self]) -> Tuple[Type[NeopixelCommand[Type[Self], Any]], ...]:
-        return SolidColorCommand, BlinkCommand, PulseCommand, RainbowCommand, RainbowWaveCommand
+    def supported_commands(cls: Type[Self]) -> Set[Type[NeopixelCommand]]:
+        return {SolidColorCommand, BlinkCommand, PulseCommand, RainbowCommand, RainbowWaveCommand}
 
     @override
     def __init__(self,

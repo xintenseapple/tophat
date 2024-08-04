@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import abc
 import multiprocessing.synchronize as mp_sync
-from typing import Any, Generic, Tuple, Type, TypeVar
+from typing import Any, Generic, Set, Type, TypeVar
 
 from typing_extensions import Self, final, override
 
@@ -53,7 +53,7 @@ class Device(DeviceBase, abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def supported_commands(cls: Type[Self]) -> Tuple[Type[Command[Type[Self], Any]], ...]:
+    def supported_commands(cls: Type[Self]) -> Set[Type[Command[Type[Self], Any]], ...]:
         raise NotImplementedError()
 
 
