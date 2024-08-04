@@ -14,7 +14,7 @@ from types import FrameType, TracebackType
 from typing import (Any, Callable, Dict, Generator, Iterable, Iterator, List, Optional, Sequence, SupportsIndex, Tuple,
                     Type, TypeVar, Union)
 
-import board
+import adafruit_blinka.board.raspberrypi.raspi_40pin as board
 import neopixel
 from typing_extensions import Self, final, overload, override
 

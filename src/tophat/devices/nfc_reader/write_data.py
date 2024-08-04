@@ -4,9 +4,8 @@ import argparse
 import sys
 from os import stat_result
 from pathlib import Path
-from typing import Optional
 
-import board
+import adafruit_blinka.board.raspberrypi.raspi_40pin as board
 from adafruit_pn532.adafruit_pn532 import PN532, _COMMAND_SAMCONFIGURATION
 from adafruit_pn532.spi import PN532_SPI
 from busio import SPI

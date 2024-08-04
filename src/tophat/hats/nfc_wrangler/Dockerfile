@@ -8,3 +8,4 @@ RUN chmod 611 /home/hatman/nfc_wrangler
 RUN ln -s /home/hatman/nfc_wrangler /usr/bin/nfc_wrangler
 
 USER hatman
+ENTRYPOINT nfc_wrangler

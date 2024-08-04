@@ -7,7 +7,7 @@ import socket
 from argparse import ArgumentParser
 from pathlib import Path
 
-import board
+import adafruit_blinka.board.raspberrypi.raspi_40pin as board
 from typing_extensions import Self, final, override
 
 from tophat.devices.neopixel import NeopixelCommand, NeopixelDevice

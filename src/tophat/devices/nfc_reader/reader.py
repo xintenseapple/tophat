@@ -5,7 +5,7 @@ import multiprocessing.queues as mp_queue
 import time
 from typing import Optional
 
-import board
+import adafruit_blinka.board.raspberrypi.raspi_40pin as board
 from adafruit_pn532.adafruit_pn532 import PN532
 from adafruit_pn532.spi import PN532_SPI
 from busio import SPI

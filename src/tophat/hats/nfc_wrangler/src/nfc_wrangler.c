@@ -35,15 +35,12 @@ int main(int argc, char *argv[])
 {
     Py_Initialize();
     PyGILState_STATE gil_state = PyGILState_Ensure();
-    printf("WORKS\n");
     tophat_client = get_client("/var/run/hatbox.socket");
-    printf("WORKS\n");
 
     if (tophat_client == NULL) {
         fprintf(stderr, "Failed to create tophat client!\n");
         return -1;
     }
-    printf("WORKS\n");
 
     signal(SIGINT, interrupt_handler);
     while(!stop) { // This might take a while...
@@ -168,10 +165,6 @@ void wrangle_data(char *nfc_card_data, char *flag_buf) {
     printf("Received nfc_card_data: %s %lu\n", nfc_card_data, strlen(nfc_card_data));
     generate_flag_token(flag_buf);
     format_NFC_data(nfc_card_data);
-    printf("gNFC_data: %s\n", gNFC_data);
-    printf("tarnation: 0x%x\n", tarnation);
-    printf("a_hacker: %d\n", a_hacker);
-    printf("is_dev: %d\n", is_dev);
     handle_token(flag_buf);
 }
 

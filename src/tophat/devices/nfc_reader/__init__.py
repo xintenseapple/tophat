@@ -3,7 +3,7 @@ from __future__ import annotations
 import multiprocessing as mp
 from typing import Any, Optional, Tuple, Type
 
-import board
+import adafruit_blinka.board.raspberrypi.raspi_40pin as board
 from typing_extensions import Self, final, override
 
 from tophat.api.device import Command, Device

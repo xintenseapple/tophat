@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import board
+import adafruit_blinka.board.raspberrypi.raspi_40pin as board
 
 from tophat.api.server import TopHatServer
 from tophat.devices.neopixel import NeopixelDeviceProxy
