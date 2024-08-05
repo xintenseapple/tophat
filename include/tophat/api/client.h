@@ -32,7 +32,7 @@ PyObject *get_client(const char *socket_path_str) {
 PyObject *send_command(PyObject *client_pyobj, const char *device_name, PyObject *command) {
     PyObject *result = PyObject_CallMethod(client_pyobj,
                                            "send_command",
-                                           "(S, O)",
+                                           "(s, O)",
                                            device_name, command);
 
     if (PyErr_Occurred()) {
