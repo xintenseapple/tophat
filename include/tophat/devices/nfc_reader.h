@@ -6,10 +6,16 @@
 
 PyObject *create_read_data_command(void) {
     PyObject *nfc_reader_module_pyobj = get_module("tophat.devices.nfc_reader");
+    if (nfc_reader_module_pyobj == NULL) return NULL;
+
     PyObject *read_data_command_pyobj = PyObject_CallMethod(nfc_reader_module_pyobj,
                                                             "ReadDataCommand",
                                                             "(O)",
                                                             Py_None);
+    if (PyErr_Occurred()) {
+        PyErr_Print();
+        PyErr_Clear();
+    }
     Py_DECREF(nfc_reader_module_pyobj);
     return read_data_command_pyobj;
 }

@@ -23,6 +23,8 @@ ADD pyproject.toml README.md requirements.txt src /home/hatman/tophat/
 RUN python3 -m pip install /home/hatman/tophat/
 RUN chown -R root:hatman /home/hatman/tophat/
 RUN chmod -R 550 /home/hatman/tophat/
+
+# Add includes
 ADD include/tophat/ /usr/include/tophat/
 
 USER hatman
