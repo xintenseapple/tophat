@@ -15,6 +15,10 @@ class PN532Device(Device, abc.ABC):
                   timeout: Optional[float] = None) -> Optional[bytearray]:
         raise NotImplementedError()
 
+    @abc.abstractmethod
+    def start_reader(self: Self) -> None:
+        raise NotImplementedError()
+
     @classmethod
     @final
     @override

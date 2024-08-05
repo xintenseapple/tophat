@@ -83,11 +83,13 @@ class TopHatServer:
                         device_type: Type[BaseDeviceType],
                         device_name: str,
                         *args: DeviceExtraParams.args,
-                        **kwargs: DeviceExtraParams.kwargs) -> None:
+                        **kwargs: DeviceExtraParams.kwargs) -> BaseDeviceType:
         if device_name in self._device_map:
             raise ValueError(f'Device {device_name} already registered')
 
-        self._device_map[device_name] = device_type.from_impl(device_name, *args, **kwargs), self._manager.Lock()
+        device: BaseDeviceType = device_type.from_impl(device_name, *args, **kwargs)
+        self._device_map[device_name] = device, self._manager.Lock()
+        return device
 
     def get_device(self: Self,
                    device_name: str) -> Optional[Device]:

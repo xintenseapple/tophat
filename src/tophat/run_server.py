@@ -19,14 +19,15 @@ from tophat.devices.printer import PrinterDevice
 
 def main() -> None:
     server = TopHatServer(Path('/srv/tophat/tophat.socket'))
-    server.register_device(PrinterDevice,
-                           'printer')
-    server.register_device(NeopixelDeviceProxy,
-                           'neopixels',
-                           Path('/srv/tophat/neopixel.socket'))
-    server.register_device(PN532Device,
-                           'nfc_reader',
-                           board.SCK, board.MOSI, board.MISO, board.D25)
+    printer_device: PrinterDevice = server.register_device(PrinterDevice,
+                                                           'printer')
+    neopixel_device: NeopixelDeviceProxy = server.register_device(NeopixelDeviceProxy,
+                                                                  'neopixels',
+                                                                  Path('/srv/tophat/neopixel.socket'))
+    nfc_device: PN532Device = server.register_device(PN532Device,
+                                                     'nfc_reader',
+                                                     board.SCK, board.MOSI, board.MISO, board.D25)
+    nfc_device.start_reader()
     server.start()
 
 

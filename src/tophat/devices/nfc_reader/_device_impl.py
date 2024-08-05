@@ -25,6 +25,14 @@ class PN532DeviceImpl(PN532Device):
         return self._read_queue.get(block=True, timeout=timeout)
 
     @override
+    def start_reader(self: Self) -> None:
+        mp.set_start_method('spawn', force=True)
+        reader_process = ReaderProcess(self._sck_pin, self._mosi_pin, self._miso_pin, self._cs_pin,
+                                       self._read_queue,
+                                       self._stop_event)
+        reader_process.start()
+
+    @override
     def __init__(self,
                  device_name: str,
                  sck_pin: board.pin.Pin,
@@ -32,13 +40,12 @@ class PN532DeviceImpl(PN532Device):
                  miso_pin: board.pin.Pin,
                  cs_pin: board.pin.Pin) -> None:
         super().__init__(device_name)
-        mp.set_start_method('spawn', force=True)
+        self._sck_pin: board.pin.Pin = sck_pin
+        self._mosi_pin: board.pin.Pin = mosi_pin
+        self._miso_pin: board.pin.Pin = miso_pin
+        self._cs_pin: board.pin.Pin = cs_pin
         self._read_queue: mp_q.Queue[bytearray] = mp.Queue(maxsize=32)
         self._stop_event: mp_sync.Event = mp.Event()
-        reader_process = ReaderProcess(sck_pin, mosi_pin, miso_pin, cs_pin,
-                                       self._read_queue,
-                                       self._stop_event)
-        reader_process.start()
 
 
 @final
