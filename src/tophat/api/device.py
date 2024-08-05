@@ -30,6 +30,12 @@ class DeviceBase(abc.ABC):
     def name(self: Self) -> str:
         return self._name
 
+    @abc.abstractmethod
+    def run(self: Self,
+            lock: mp_sync.Lock,
+            command: Command[DeviceType, ResultType]) -> ResultType:
+        raise NotImplementedError()
+
     @classmethod
     @final
     def from_impl(cls: Type[Self],
@@ -73,12 +79,6 @@ class Device(DeviceBase, abc.ABC):
 
 
 class DeviceProxy(Generic[DeviceType], DeviceBase, abc.ABC):
-
-    @abc.abstractmethod
-    def run(self: Self,
-            lock: mp_sync.Lock,
-            command: Command[DeviceType, ResultType]) -> ResultType:
-        raise NotImplementedError()
 
     @classmethod
     @final

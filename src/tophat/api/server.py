@@ -3,13 +3,14 @@ from __future__ import annotations
 import logging
 import multiprocessing as mp
 import multiprocessing.managers as mp_managers
-import multiprocessing.pool as mp_pool
 import multiprocessing.synchronize as mp_sync
 import pickle
 import signal
 import socket
 import sys
 import uuid
+from concurrent.futures import Future, ProcessPoolExecutor
+from functools import partial
 from pathlib import Path
 from typing import Any, Dict, Generic, Optional, Tuple, Type, TypeVar
 
@@ -43,17 +44,14 @@ def _supress_sigint() -> None:
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 
-@final
-class _ResultCallback(Generic[ResultType]):
-
-    def success(self: Self,
-                result: ResultType) -> None:
-        LOGGER.debug(f'Finished running command')
-        self._client_socket.sendall(pickle.dumps(CommandResponse.from_success(result)))
-        self._client_socket.close()
-
-    def error(self: Self,
-              exception: ExceptionType) -> None:
+def _result_callback(client_socket: socket.socket,
+                     result_future: Future[ResultType]) -> None:
+    if result_future.cancelled():
+        LOGGER.error(f'Command was cancelled somehow?')
+        client_socket.sendall(pickle.dumps(CommandResponse.from_error(ResponseCode.ERROR_UNKNOWN)))
+        client_socket.close()
+    elif result_future.exception() is not None:
+        exception = result_future.exception()
         response: CommandResponse
         if isinstance(exception, UnsupportedCommandError):
             LOGGER.error(f'Attempted to run unsupported command: {exception}')
@@ -63,13 +61,12 @@ class _ResultCallback(Generic[ResultType]):
             LOGGER.error(f'Command failed with exception: {exception}')
             response = CommandResponse.from_error(ResponseCode.ERROR_UNKNOWN)
 
-        self._client_socket.sendall(pickle.dumps(response))
-        self._client_socket.close()
-
-    @override
-    def __init__(self,
-                 client_socket: socket.socket) -> None:
-        self._client_socket: socket.socket = client_socket
+        client_socket.sendall(pickle.dumps(response))
+        client_socket.close()
+    else:
+        LOGGER.debug(f'Finished running command')
+        client_socket.sendall(pickle.dumps(CommandResponse.from_success(result_future.result())))
+        client_socket.close()
 
 
 @final
@@ -116,7 +113,8 @@ class TopHatServer:
 
         try:
             LOGGER.info('Starting tophat server...')
-            with (mp_pool.Pool(initializer=_supress_sigint) as process_pool,
+
+            with (ProcessPoolExecutor(max_workers=4, initializer=_supress_sigint) as process_pool,
                   socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server_socket):
                 server_socket.bind(str(self._socket_path))
                 server_socket.listen()
@@ -172,13 +170,12 @@ class TopHatServer:
             LOGGER.error(f'Failed to pickle response: {pickling_error}')
 
     def _handle_request(self: Self,
-                        process_pool: mp_pool.Pool,
+                        process_pool: ProcessPoolExecutor,
                         client_socket: socket.socket,
                         request: CommandRequest[DeviceType, ResultType]) -> None:
         if request.device_name not in self._device_map:
             LOGGER.error(f'Unknown device ID: {request.device_name}')
-            client_socket.sendall(
-                pickle.dumps(CommandResponse.from_error(ResponseCode.ERROR_INVALID_DEVICE)))
+            client_socket.sendall(pickle.dumps(CommandResponse.from_error(ResponseCode.ERROR_INVALID_DEVICE)))
             client_socket.close()
             return
 
@@ -188,7 +185,8 @@ class TopHatServer:
         if isinstance(request.command, AsyncCommand):
             LOGGER.debug(f'Running {type(request.command).__name__} asynchronously on device {target_device.name}...')
             try:
-                process_pool.apply_async(target_device.run, (device_lock, request.command,)).get(0.0)
+                result_future: Future[ResultType] = process_pool.submit(target_device.run, device_lock, request.command)
+                result_future.result(0.0)
             except mp.TimeoutError:
                 pass
             LOGGER.debug(f'Command left to run asynchronously')
@@ -198,12 +196,8 @@ class TopHatServer:
 
         else:
             LOGGER.debug(f'Running {type(request.command).__name__} on device {target_device.name}...')
-            result_callback: _ResultCallback = _ResultCallback(client_socket)
-            process_pool.apply_async(
-                target_device.run,
-                (device_lock, request.command,),
-                callback=result_callback.success,
-                error_callback=result_callback.error)
+            result_future: Future[ResultType] = process_pool.submit(target_device.run, device_lock, request.command)
+            result_future.add_done_callback(partial(_result_callback, client_socket))
             return
 
 
