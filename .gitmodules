@@ -1,3 +1,3 @@
 [submodule "hats"]
 	path = src/tophat/hats
-	url = git@github.com:xintenseapple/hack-my-hats.git
+	url = https://github.com/xintenseapple/hack-my-hats.git

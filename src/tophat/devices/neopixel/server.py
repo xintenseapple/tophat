@@ -64,12 +64,15 @@ class NeopixelServer:
 
 if __name__ == '__main__':
     arg_parser = ArgumentParser()
-    arg_parser.add_argument('socket_path', type=Path)
+    arg_parser.add_argument('--socket-path',
+                            dest='socket_path',
+                            type=Path,
+                            default=DEFAULT_SOCKET_PATH)
     arg_parser.add_argument('pin', type=int)
     arg_parser.add_argument('num_leds', type=int)
 
     args = arg_parser.parse_args()
-    server: NeopixelServer = NeopixelServer(DEFAULT_SOCKET_PATH, board.pin.Pin(args.pin), args.num_leds)
+    server: NeopixelServer = NeopixelServer(args.socket_path, board.pin.Pin(args.pin), args.num_leds)
 
     try:
         server.start()
