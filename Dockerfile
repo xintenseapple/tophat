@@ -20,7 +20,6 @@ VOLUME /var/run/hatbox.socket
 # Add and install tophat Python package
 RUN mkdir /home/hatman/tophat/
 ADD pyproject.toml README.md requirements.txt src /home/hatman/tophat/
-RUN python3 -m pip install -r /home/hatman/tophat/requirements.txt
 RUN python3 -m pip install /home/hatman/tophat/
 RUN chown -R root:hatman /home/hatman/tophat/
 RUN chmod -R 550 /home/hatman/tophat/
