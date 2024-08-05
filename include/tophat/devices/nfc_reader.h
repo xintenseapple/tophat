@@ -11,7 +11,7 @@ PyObject *create_read_data_command(void) {
     PyObject *read_data_command_pyobj = PyObject_CallMethod(nfc_reader_module_pyobj,
                                                             "ReadDataCommand",
                                                             "(O)",
-                                                            Py_None);
+                                                            Py_None());
     if (PyErr_Occurred()) {
         PyErr_Print();
         PyErr_Clear();
