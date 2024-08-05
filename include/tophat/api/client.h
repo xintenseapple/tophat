@@ -27,11 +27,11 @@ PyObject *get_client(const char *socket_path_str) {
     }
 }
 
-PyObject *send_command(PyObject *client_pyobj, const uint64_t device_id, PyObject *command) {
+PyObject *send_command(PyObject *client_pyobj, const char *device_name, PyObject *command) {
     PyObject *result = PyObject_CallMethod(client_pyobj,
                                            "send_command",
-                                           "(L, O)",
-                                           device_id, command);
+                                           "(S, O)",
+                                           device_name, command);
 
     if (PyErr_Occurred()) {
         PyErr_Print();
