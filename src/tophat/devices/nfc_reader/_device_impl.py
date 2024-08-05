@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import multiprocessing as mp
-import multiprocessing.queues as mp_queue
+import multiprocessing.queues as mp_q
+import multiprocessing.synchronize as mp_sync
 import time
 from typing import Optional
 
@@ -21,8 +22,7 @@ class PN532DeviceImpl(PN532Device):
     @override
     def read_data(self: Self,
                   timeout: Optional[float] = None) -> Optional[bytearray]:
-        return self._reader_process.read_buffer_queue.get(block=True,
-                                                          timeout=timeout)
+        return self._read_queue.get(block=True, timeout=timeout)
 
     @override
     def __init__(self,
@@ -33,19 +33,20 @@ class PN532DeviceImpl(PN532Device):
                  cs_pin: board.pin.Pin) -> None:
         super().__init__(device_name)
         mp.set_start_method('spawn', force=True)
-        self._reader_process = ReaderProcess(sck_pin, mosi_pin, miso_pin, cs_pin)
-        self._reader_process.start()
+        self._read_queue: mp_q.Queue[bytearray] = mp.Queue(maxsize=32)
+        self._stop_event: mp_sync.Event = mp.Event()
+        reader_process = ReaderProcess(sck_pin, mosi_pin, miso_pin, cs_pin,
+                                       self._read_queue,
+                                       self._stop_event)
+        reader_process.start()
 
 
 @final
 class ReaderProcess(mp.Process):
 
     @property
-    def read_buffer_queue(self: Self) -> mp_queue.Queue[bytearray]:
+    def read_buffer_queue(self: Self) -> mp_q.Queue[bytearray]:
         return self._read_buffer_queue
-
-    def stop(self: Self) -> None:
-        self._stop_event.set()
 
     @override
     def run(self: Self) -> None:
@@ -64,7 +65,9 @@ class ReaderProcess(mp.Process):
                  sck_pin: board.pin.Pin,
                  mosi_pin: board.pin.Pin,
                  miso_pin: board.pin.Pin,
-                 cs_pin: board.pin.Pin) -> None:
+                 cs_pin: board.pin.Pin,
+                 read_queue: mp_q.Queue[bytearray],
+                 stop_event: mp_sync.Event) -> None:
         super().__init__(name='nfc_reader',
                          daemon=True)
         self._sck_pin: board.pin.Pin = sck_pin
@@ -72,8 +75,8 @@ class ReaderProcess(mp.Process):
         self._miso_pin: board.pin.Pin = miso_pin
         self._cs_pin: board.pin.Pin = cs_pin
 
-        self._read_buffer_queue: mp_queue.Queue[bytearray] = mp.Queue(maxsize=64)
-        self._stop_event = mp.Event()
+        self._read_queue: mp_q.Queue[bytearray] = read_queue
+        self._stop_event: mp_sync.Event = stop_event
 
     class _Stopped(Exception):
         pass
