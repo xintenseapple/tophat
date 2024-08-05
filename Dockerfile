@@ -14,8 +14,8 @@ RUN python3 -m pip install --upgrade pip
 # Create new user
 RUN useradd --create-home --user-group --shell /bin/bash hatman
 
-# Create volume for hatbox socket
-VOLUME /var/run/hatbox/
+# Create volume for tophat socket
+VOLUME /var/run/tophat/
 
 # Add and install tophat Python package
 RUN mkdir /home/hatman/tophat/

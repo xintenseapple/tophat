@@ -27,7 +27,7 @@ LOGGER = logging.getLogger('tophat')
 LOGGER.setLevel(logging.DEBUG)
 LOGGER.addHandler(logging.StreamHandler(sys.stdout))
 
-HAT_SOCKET_PATH: Path = Path('/var/run/hatbox/hatbox.socket')
+HAT_SOCKET_PATH: Path = Path('/var/run/tophat/tophat.socket')
 
 DeviceLockPair = Tuple[DeviceBase, mp_sync.Lock]
 DeviceMap = Dict[str, DeviceLockPair]

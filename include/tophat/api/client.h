@@ -4,7 +4,7 @@
 
 #pragma once
 
-#define DEFAULT_SOCKET_PATH "/var/run/hatbox/hatbox.socket"
+#define DEFAULT_SOCKET_PATH "/var/run/tophat/tophat.socket"
 
 PyObject *get_client(const char *socket_path_str) {
     PyObject *client_module_pyobj = get_module("tophat.api.client");
