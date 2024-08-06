@@ -142,6 +142,7 @@ class TopHatServer:
             for hat_box in self._hat_map.values():
                 hat_box.stop()
             self._socket_path.unlink(missing_ok=True)
+            exit(0)
 
     @override
     def __init__(self,
