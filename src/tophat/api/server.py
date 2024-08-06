@@ -46,13 +46,13 @@ def _supress_sigint() -> None:
 
 def _result_callback(client_socket: socket.socket,
                      result_future: Future[ResultType]) -> None:
+    response: CommandResponse
     if result_future.cancelled():
         LOGGER.error(f'Command was cancelled somehow?')
-        client_socket.sendall(pickle.dumps(CommandResponse.from_error(ResponseCode.ERROR_UNKNOWN)))
-        client_socket.close()
+        response = CommandResponse.from_error(ResponseCode.CANCELLED)
+
     elif result_future.exception() is not None:
         exception = result_future.exception()
-        response: CommandResponse
         if isinstance(exception, UnsupportedCommandError):
             LOGGER.error(f'Attempted to run unsupported command: {exception}')
             response = CommandResponse.from_error(ResponseCode.ERROR_UNSUPPORTED_COMMAND)
@@ -61,12 +61,11 @@ def _result_callback(client_socket: socket.socket,
             LOGGER.error(f'Command failed with exception: {exception}')
             response = CommandResponse.from_error(ResponseCode.ERROR_UNKNOWN)
 
-        client_socket.sendall(pickle.dumps(response))
-        client_socket.close()
     else:
         LOGGER.debug(f'Finished running command')
-        client_socket.sendall(pickle.dumps(CommandResponse.from_success(result_future.result())))
-        client_socket.close()
+        response = CommandResponse.from_success(result_future.result())
+    client_socket.sendall(pickle.dumps(response))
+    client_socket.close()
 
 
 @final

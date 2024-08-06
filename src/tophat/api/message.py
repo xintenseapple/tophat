@@ -22,6 +22,7 @@ class Request(Message, abc.ABC):
 @final
 class ResponseCode(enum.IntEnum):
     SUCCESS = enum.auto()
+    CANCELLED = enum.auto()
     ERROR_INVALID_DEVICE = enum.auto()
     ERROR_UNSUPPORTED_COMMAND = enum.auto()
     ERROR_UNKNOWN = enum.auto()

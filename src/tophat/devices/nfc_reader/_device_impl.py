@@ -23,6 +23,7 @@ class PN532DeviceImpl(PN532Device):
     @override
     def read_data(self: Self,
                   timeout: Optional[float] = None) -> Optional[bytearray]:
+
         return self._read_queue.get(block=True, timeout=timeout)
 
     @override
@@ -89,7 +90,7 @@ class ReaderProcess(mp.Process):
     def _await_data(self: Self,
                     pn532: PN532) -> bytearray:
         while not self._stop_event.is_set():
-            if pn532.read_passive_target(timeout=0.5) is not None:
+            if pn532.read_passive_target(timeout=0.2) is not None:
                 return ReaderProcess._read_data(pn532)
             pn532.power_down()
             time.sleep(1.8)
