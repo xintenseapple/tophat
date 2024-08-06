@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import multiprocessing as mp
+import multiprocessing.managers as mp_mngr
 import multiprocessing.queues as mp_q
 import multiprocessing.synchronize as mp_sync
 import time
@@ -38,14 +39,15 @@ class PN532DeviceImpl(PN532Device):
                  sck_pin: board.pin.Pin,
                  mosi_pin: board.pin.Pin,
                  miso_pin: board.pin.Pin,
-                 cs_pin: board.pin.Pin) -> None:
+                 cs_pin: board.pin.Pin,
+                 manager: mp_mngr.SyncManager) -> None:
         super().__init__(device_name)
         self._sck_pin: board.pin.Pin = sck_pin
         self._mosi_pin: board.pin.Pin = mosi_pin
         self._miso_pin: board.pin.Pin = miso_pin
         self._cs_pin: board.pin.Pin = cs_pin
-        self._read_queue: mp_q.Queue[bytearray] = mp.Queue(maxsize=32)
-        self._stop_event: mp_sync.Event = mp.Event()
+        self._read_queue: mp_q.Queue[bytearray] = manager.Queue(maxsize=32)
+        self._stop_event: mp_sync.Event = manager.Event()
 
 
 @final

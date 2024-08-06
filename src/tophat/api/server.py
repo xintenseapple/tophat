@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import multiprocessing as mp
-import multiprocessing.managers as mp_managers
+import multiprocessing.managers as mp_mngr
 import multiprocessing.synchronize as mp_sync
 import pickle
 import signal
@@ -76,6 +76,10 @@ class TopHatServer:
     def socket_path(self: Self) -> Path:
         return self._socket_path
 
+    @property
+    def manager(self: Self) -> mp_mngr.SyncManager:
+        return self._manager
+
     def register_device(self: Self,
                         device_type: Type[BaseDeviceType],
                         device_name: str,
@@ -145,9 +149,7 @@ class TopHatServer:
         self._socket_path = socket_path if socket_path is not None else Path(f'/srv/tophat/{uuid.uuid4()}.socket')
         self._device_map: DeviceMap = {}
         self._hat_map: HatMap = {}
-
-        mp.set_start_method('spawn', force=True)
-        self._manager: mp_managers.SyncManager = mp.Manager()
+        self._manager: mp_mngr.SyncManager() = mp.Manager()
 
     @staticmethod
     def _await_request(client_socket: socket.socket) -> Optional[CommandRequest[DeviceType, ResultType]]:
