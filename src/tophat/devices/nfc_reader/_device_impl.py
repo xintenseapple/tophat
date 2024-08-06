@@ -53,10 +53,6 @@ class PN532DeviceImpl(PN532Device):
 @final
 class ReaderProcess(mp.Process):
 
-    @property
-    def read_buffer_queue(self: Self) -> mp_q.Queue[bytearray]:
-        return self._read_buffer_queue
-
     @override
     def run(self: Self) -> None:
         pn532: PN532 = PN532_SPI(spi=SPI(self._sck_pin, self._mosi_pin, self._miso_pin),
@@ -65,7 +61,7 @@ class ReaderProcess(mp.Process):
         pn532.SAM_configuration()
         while True:
             try:
-                self._read_buffer_queue.put(self._await_data(pn532))
+                self._read_queue.put(self._await_data(pn532))
             except ReaderProcess._Stopped:
                 self._stop(pn532)
 
@@ -117,5 +113,5 @@ class ReaderProcess(mp.Process):
     def _stop(self: Self,
               pn532: PN532) -> None:
         pn532.power_down()
-        self._read_buffer_queue.close()
-        self._read_buffer_queue.join_thread()
+        self._read_queue.close()
+        self._read_queue.join_thread()
