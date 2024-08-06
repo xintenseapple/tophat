@@ -89,14 +89,12 @@ class ReaderProcess(mp.Process):
     def _await_data(self: Self,
                     pn532: PN532) -> bytearray:
         while not self._stop_event.is_set():
-            if pn532.listen_for_passive_target(timeout=0.2):
-                break
+            if pn532.read_passive_target(timeout=0.5) is not None:
+                return ReaderProcess._read_data(pn532)
             pn532.power_down()
             time.sleep(1.8)
         else:
             raise ReaderProcess._Stopped()
-
-        return ReaderProcess._read_data(pn532)
 
     @staticmethod
     def _read_data(pn532: PN532) -> bytearray:
