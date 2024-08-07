@@ -4,14 +4,14 @@
 
 #pragma once
 
-PyObject *create_read_data_command(void) {
+PyObject *create_read_data_command(float timeout) {
     PyObject *nfc_reader_module_pyobj = get_module("tophat.devices.nfc_reader");
     if (nfc_reader_module_pyobj == NULL) return NULL;
 
     PyObject *read_data_command_pyobj = PyObject_CallMethod(nfc_reader_module_pyobj,
                                                             "ReadDataCommand",
-                                                            "(O)",
-                                                            Py_None);
+                                                            "(f)",
+                                                            timeout);
     if (PyErr_Occurred()) {
         PyErr_Print();
         PyErr_Clear();

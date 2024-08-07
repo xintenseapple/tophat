@@ -4,6 +4,7 @@ import multiprocessing as mp
 import multiprocessing.managers as mp_mngr
 import multiprocessing.queues as mp_q
 import multiprocessing.synchronize as mp_sync
+import queue
 import time
 from typing import Optional
 
@@ -22,9 +23,11 @@ class PN532DeviceImpl(PN532Device):
 
     @override
     def read_data(self: Self,
-                  timeout: Optional[float] = None) -> Optional[bytearray]:
-
-        return self._read_queue.get(block=True, timeout=timeout)
+                  timeout: Optional[float] = None) -> bytearray:
+        try:
+            return self._read_queue.get(block=True, timeout=timeout)
+        except queue.Empty:
+            return bytearray()
 
     @override
     def start_reader(self: Self) -> None:

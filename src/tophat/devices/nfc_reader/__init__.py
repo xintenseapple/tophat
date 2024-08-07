@@ -12,7 +12,7 @@ class PN532Device(Device, abc.ABC):
 
     @abc.abstractmethod
     def read_data(self: Self,
-                  timeout: Optional[float] = None) -> Optional[bytearray]:
+                  timeout: Optional[float] = None) -> bytearray:
         raise NotImplementedError()
 
     @abc.abstractmethod
