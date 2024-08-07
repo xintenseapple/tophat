@@ -132,7 +132,7 @@ class TopHatServer:
                         request: CommandRequest[DeviceType, ResultType] = self._await_request(client_socket)
                         self._handle_request(process_pool, client_socket, request)
 
-                    except socket.error as socket_error:
+                    except OSError as socket_error:
                         LOGGER.error(f'Socket error occurred: {socket_error}')
                         client_socket.close()
 
@@ -189,7 +189,7 @@ class TopHatServer:
             try:
                 result_future: Future[ResultType] = process_pool.submit(target_device.run, device_lock, request.command)
                 result_future.result(0.0)
-            except mp.TimeoutError:
+            except TimeoutError:
                 pass
             LOGGER.debug(f'Command left to run asynchronously')
             client_socket.sendall(pickle.dumps(CommandResponse.from_success(None)))

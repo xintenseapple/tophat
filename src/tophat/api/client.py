@@ -34,8 +34,11 @@ class TopHatClient:
                 else:
                     return response.result
 
-            except socket.error as socket_error:
+            except OSError as socket_error:
                 raise RuntimeError(f'Failed to connect to tophat server with error') from socket_error
+
+            except EOFError as eof_error:
+                raise RuntimeError(f'Failed to receive data to unpickle') from eof_error
 
             except pickle.PicklingError as pickling_error:
                 raise RuntimeError(f'Failed to pickle request') from pickling_error
