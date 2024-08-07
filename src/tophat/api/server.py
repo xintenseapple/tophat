@@ -65,7 +65,7 @@ def _result_callback(client_socket: socket.socket,
         LOGGER.debug(f'Finished running command')
         response = CommandResponse.from_success(result_future.result())
     client_socket.sendall(pickle.dumps(response))
-    client_socket.close()
+    client_socket.shutdown(socket.SHUT_WR)
 
 
 @final
@@ -178,7 +178,7 @@ class TopHatServer:
         if request.device_name not in self._device_map:
             LOGGER.error(f'Unknown device ID: {request.device_name}')
             client_socket.sendall(pickle.dumps(CommandResponse.from_error(ResponseCode.ERROR_INVALID_DEVICE)))
-            client_socket.close()
+            client_socket.shutdown(socket.SHUT_WR)
             return
 
         target_device: BaseDeviceType
@@ -193,7 +193,7 @@ class TopHatServer:
                 pass
             LOGGER.debug(f'Command left to run asynchronously')
             client_socket.sendall(pickle.dumps(CommandResponse.from_success(None)))
-            client_socket.close()
+            client_socket.shutdown(socket.SHUT_WR)
             return
 
         else:
