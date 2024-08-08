@@ -1,0 +1,8 @@
+User-agent: Googlebot
+Disallow: /nogooglebot/
+
+User-agent: *
+Allow: /
+Disallow: /flag1.html
+
+Sitemap: https://www.example.com/sitemap.xml

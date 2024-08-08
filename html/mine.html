@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hack My Hat</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      min-height: 100vh;
+      background-image: url("miner_background.jpg"); /* Set the background image */
+      background-size: cover; /* Ensure the image covers the entire viewport */
+      background-repeat: no-repeat; /* Prevent the image from repeating */
+      padding-top: 30px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .gif-image {
+      max-width: 100px;
+      margin: 10px;
+    }
+
+    .title {
+      font-size: 36px;
+      font-weight: bold;
+      font-family: 'Comic Sans MS'; /* idk whats going on here but its comic sans somehow */
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .gif-left {
+      margin-right: 10px;
+    }
+
+    .gif-right {
+      margin-left: 10px;
+    }
+
+    .description {
+      font-size: 24px; /* Adjust font size for Comic Sans */
+      font-family: 'Comic Sans MS'; /* Apply Comic Sans font */
+      font-weight: bold;
+      color: white; /* Set font color to white */
+      text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black; /* Add black outline */
+      text-align: left;
+      max-width: 650px;
+      margin-bottom: 20px;
+    }
+
+
+    .subtitle {
+      font-family: 'Comic Sans MS', cursive; /* Apply Comic Sans font */
+      font-size: 40px;
+      font-weight: bold;
+      font-style: italic; /* Add italic style */
+      text-shadow: 4px 4px 8px ghostwhite;
+      background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet); /* Multicolored text */
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+  </style>
+  <!-- Link to Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">
+      <img src="./diamon_pick.webp" alt="WEBP Image" class="gif-image gif-left">
+      Howdy Partner!
+      <img src="./diamon_pick.webp" alt="WEBP Image" class="gif-image gif-right">
+    </h1>
+    <p class="description">
+    &emsp; Welcome to the darkest, spelunkiest, hat-hackinest CTF in the greater {CITY} area
+    <br>
+    <br>
+       &emsp; This is a Binary Exploitation CTF that utilizes a socket connection, ain't gonna do you no good to go
+       around on this here website.
+     <br>
+     <br>
+       &emsp; If you ain't seen me yet, look fe'r the fella with the mining headlamp. Come by and ask me fe'r instructions
+       on how to get started. Once you're connected, upload your rootinest-tootinest exploits to the hat.
+       <br>
+       <br>
+       &emsp; You're gonna have to do a little minin' to get this here hat to do somethin it ain't s'posed to.
+       When you're ready to upload your hacks, come find me and connect to the hat's WiFi and socket on port 1234. Then
+       we'll see if your hacking skills are up to snuff.
+       <br>
+
+        Click <a href="https://github.com/xintenseapple/hack-my-hats/tree/main/heap_miner/src/heap_miner.c">here</a>
+	for the source code
+	<br>
+	<br>
+
+	&emsp;Wanna download the whole dang thing and not touch the hat?
+	Well butter my biscuits and call me a baker, you can be my guest.
+	<br>
+	Get the whole dang thing on the <a href="https://github.com/xintenseapple/hack-my-hats/"> github page</a>
+    </p>
+    <p class="subtitle">
+      Good luck minin' that heap!
+    </p>
+    <p>
+      <img src="./miner.gif" alt="GIF Image" class="gif-image">
+    </p>
+  </div>
+</body>
+</html>

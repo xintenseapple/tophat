@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hack My Hat</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      min-height: 100vh;
+      background-image: url("wrangler_background.png"); /* Set the background image */
+      background-size: cover; /* Ensure the image covers the entire viewport */
+      background-repeat: no-repeat; /* Prevent the image from repeating */
+      padding-top: 30px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .gif-image {
+      max-width: 100px;
+      margin: 10px;
+    }
+
+    .title {
+      font-size: 36px;
+      font-weight: bold;
+      font-family: 'Comic Sans MS'; /* idk whats going on here but its comic sans somehow */
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .gif-left {
+      margin-right: 10px;
+    }
+
+    .gif-right {
+      margin-left: 10px;
+    }
+
+    .description {
+      font-size: 24px; /* Adjust font size for Comic Sans */
+      font-family: 'Comic Sans MS'; /* Apply Comic Sans font */
+      font-weight: bold;
+      color: white; /* Set font color to white */
+      text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black; /* Add black outline */
+      text-align: left;
+      max-width: 650px;
+      margin-bottom: 20px;
+    }
+
+    
+    .subtitle {
+      font-family: 'Comic Sans MS', cursive; /* Apply Comic Sans font */
+      font-size: 40px;
+      font-weight: bold;
+      font-style: italic; /* Add italic style */
+      text-shadow: 4px 4px 8px ghostwhite;
+      background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet); /* Multicolored text */
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+  </style>
+  <!-- Link to Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">
+      <img src="./gun_left.gif" alt="GIF Image" class="gif-image gif-left">
+      Howdy Partner!
+      <img src="./gun_right.gif" alt="GIF Image" class="gif-image gif-right">
+    </h1>
+    <p class="description">
+    &emsp; Welcome to the wildest, westest, hat-hackinest CTF in the greater {CITY} area
+    <br>
+    <br>
+       &emsp; This is a Binary Exploitation CTF that utilizes NFC, ain't gonna do you no good to go
+       around on this here website.
+     <br>
+     <br>
+       &emsp; If you ain't seen me yet, come by and get yourself an NFC card from me. 
+       Use that dang ol' card to upload your rootinest-tootinest exploits to the hat. 
+       <br>
+       <br>
+       &emsp; You're gonna have to use that fine little rectangle to make the hat do things it aint s'pose to.
+       When you're ready to upload your hacks, come tap that there NFC card to the red square on the hat, and see if
+       your hacking skills are up to snuff.
+       <br>
+       <br>
+       &emsp;The tags use <a href="https://www.shopnfc.com/en/content/6-nfc-tags-specs"> NFC215</a> 
+       and I aint got no ulterior motive for telling you that by golly. 
+       <br>
+
+        Click <a href="https://github.com/ShoolerM/HackMyHat2/blob/main/hatserver.c/">here</a>   
+	for the source code 
+	<br>
+        And <a href="https://github.com/ShoolerM/HackMyHat2/blob/main/hatserver/">here</a>   
+	for the binary 
+	<br>
+	<br>
+
+	&emsp;Wanna download the whole dang thing and not touch the hat? 
+	Well butter my biscuits and call me a baker, you can be my guest. 
+	<br>
+	Get the whole dang thing on the <a href="https://github.com/ShoolerM/HackMyHat2"> github page</a> 
+    </p>
+    <p class="subtitle">
+      Yeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeehaw!
+    </p>
+  </div>
+</body>
+</html>
