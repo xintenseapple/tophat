@@ -121,24 +121,23 @@ class TopHatServer:
                 for hat_box in self._hat_map.values():
                     hat_box.start()
 
-                    LOGGER.info('Starting tophat server...')
+                LOGGER.info('Starting tophat server...')
+                with ProcessPoolExecutor(max_workers=2, initializer=_supress_sigint) as process_pool:
+                    server_socket.listen()
 
-                    with ProcessPoolExecutor(max_workers=2, initializer=_supress_sigint) as process_pool:
-                        server_socket.listen()
+                    while True:
+                        client_socket: socket.socket
+                        client_address: Any
+                        client_socket, client_address = server_socket.accept()
 
-                        while True:
-                            client_socket: socket.socket
-                            client_address: Any
-                            client_socket, client_address = server_socket.accept()
+                        LOGGER.debug(f'Accepted connection')
+                        try:
+                            request: CommandRequest[DeviceType, ResultType] = self._await_request(client_socket)
+                            self._handle_request(process_pool, client_socket, request)
 
-                            LOGGER.debug(f'Accepted connection')
-                            try:
-                                request: CommandRequest[DeviceType, ResultType] = self._await_request(client_socket)
-                                self._handle_request(process_pool, client_socket, request)
-
-                            except OSError as socket_error:
-                                LOGGER.error(f'Socket error occurred: {socket_error}')
-                                client_socket.close()
+                        except OSError as socket_error:
+                            LOGGER.error(f'Socket error occurred: {socket_error}')
+                            client_socket.close()
 
         except KeyboardInterrupt:
             LOGGER.info('Closing tophat server...')
