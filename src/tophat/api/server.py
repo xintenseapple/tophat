@@ -218,9 +218,8 @@ class HatBox(Generic[HatType]):
             self._container = self._docker_client.containers.run(image=self._hat.image_name,
                                                                  detach=True,
                                                                  auto_remove=True,
-                                                                 cpu_percent=20,
-                                                                 network_disabled=True,
-                                                                 volumes=self._container_volumes())
+                                                                 cpu_percent=25,
+                                                                 volumes=self._container_volumes)
             return True
 
         except DockerException:
