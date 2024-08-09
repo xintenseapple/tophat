@@ -6,6 +6,7 @@ from pathlib import Path
 from adafruit_platformdetect import Detector
 
 from tophat.devices.digital_switch import DigitalSwitchDevice
+from tophat.hats.nfc_wrangler import NFCWranglerHat
 
 if Detector().board.any_raspberry_pi_40_pin:
     import adafruit_blinka.board.raspberrypi.raspi_40pin as board
@@ -30,6 +31,8 @@ def main() -> None:
     server.register_device(DigitalSwitchDevice,
                            'headlamp',
                            board.D23)
+
+    server.register_hat(NFCWranglerHat())
 
     server.start()
 

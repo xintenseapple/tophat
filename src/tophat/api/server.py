@@ -114,10 +114,13 @@ class TopHatServer:
             LOGGER.warning('Found existing tophat socket, removing...')
             self._socket_path.unlink()
 
+        for hat_box in self._hat_map.values():
+            hat_box.start()
+
         try:
             LOGGER.info('Starting tophat server...')
 
-            with (ProcessPoolExecutor(max_workers=4, initializer=_supress_sigint) as process_pool,
+            with (ProcessPoolExecutor(max_workers=2, initializer=_supress_sigint) as process_pool,
                   socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server_socket):
                 server_socket.bind(str(self._socket_path))
                 server_socket.listen()
@@ -212,20 +215,20 @@ class HatBox(Generic[HatType]):
 
     def start(self: Self) -> bool:
         try:
-            container: Container = self._docker_client.containers.run(image=self._hat.image_name,
-                                                                      detach=True,
-                                                                      auto_remove=True,
-                                                                      cpu_percent=20,
-                                                                      network_disabled=True,
-                                                                      volumes=self._container_volumes())
-
-            container.wait()
+            self._container = self._docker_client.containers.run(image=self._hat.image_name,
+                                                                 detach=True,
+                                                                 auto_remove=True,
+                                                                 cpu_percent=20,
+                                                                 network_disabled=True,
+                                                                 volumes=self._container_volumes())
             return True
 
         except DockerException:
             return False
 
     def stop(self: Self):
+        if self._container is not None:
+            self._container.stop(timeout=8)
         self._docker_client.close()
 
     @override
@@ -235,6 +238,7 @@ class HatBox(Generic[HatType]):
         self._tophat: TopHatServer = tophat
         self._hat: HatType = hat
         self._docker_client: DockerClient = DockerClient.from_env()
+        self._container: Optional[Container] = None
 
     @property
     def _container_volumes(self: Self):
