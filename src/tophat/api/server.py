@@ -114,30 +114,31 @@ class TopHatServer:
             LOGGER.warning('Found existing tophat socket, removing...')
             self._socket_path.unlink()
 
-        for hat_box in self._hat_map.values():
-            hat_box.start()
-
         try:
-            LOGGER.info('Starting tophat server...')
-
-            with (ProcessPoolExecutor(max_workers=2, initializer=_supress_sigint) as process_pool,
-                  socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server_socket):
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server_socket:
                 server_socket.bind(str(self._socket_path))
-                server_socket.listen()
 
-                while True:
-                    client_socket: socket.socket
-                    client_address: Any
-                    client_socket, client_address = server_socket.accept()
+                for hat_box in self._hat_map.values():
+                    hat_box.start()
 
-                    LOGGER.debug(f'Accepted connection')
-                    try:
-                        request: CommandRequest[DeviceType, ResultType] = self._await_request(client_socket)
-                        self._handle_request(process_pool, client_socket, request)
+                    LOGGER.info('Starting tophat server...')
 
-                    except OSError as socket_error:
-                        LOGGER.error(f'Socket error occurred: {socket_error}')
-                        client_socket.close()
+                    with ProcessPoolExecutor(max_workers=2, initializer=_supress_sigint) as process_pool:
+                        server_socket.listen()
+
+                        while True:
+                            client_socket: socket.socket
+                            client_address: Any
+                            client_socket, client_address = server_socket.accept()
+
+                            LOGGER.debug(f'Accepted connection')
+                            try:
+                                request: CommandRequest[DeviceType, ResultType] = self._await_request(client_socket)
+                                self._handle_request(process_pool, client_socket, request)
+
+                            except OSError as socket_error:
+                                LOGGER.error(f'Socket error occurred: {socket_error}')
+                                client_socket.close()
 
         except KeyboardInterrupt:
             LOGGER.info('Closing tophat server...')
