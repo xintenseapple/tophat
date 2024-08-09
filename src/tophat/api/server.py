@@ -141,6 +141,7 @@ class TopHatServer:
 
         except KeyboardInterrupt:
             LOGGER.info('Closing tophat server...')
+            return
 
         finally:
             for hat_box in self._hat_map.values():
