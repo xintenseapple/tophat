@@ -194,11 +194,15 @@ class TopHatServer:
             LOGGER.debug(f'Running {type(request.command).__name__} asynchronously on device {target_device.name}...')
             try:
                 result_future: Future[ResultType] = process_pool.submit(target_device.run, device_lock, request.command)
-                result_future.result(0.0)
+                response: CommandResponse[None] = CommandResponse.from_success(result_future.result(0.1))
             except TimeoutError:
-                pass
+                response = CommandResponse.from_success(None)
+            except Exception as e:
+                LOGGER.error(f'Failed to execute {type(request.command).__name__} with error: {e}')
+                response = CommandResponse.from_error(ResponseCode.ERROR_INVALID_DEVICE)
+
             LOGGER.debug(f'Command left to run asynchronously')
-            client_socket.sendall(pickle.dumps(CommandResponse.from_success(None)))
+            client_socket.sendall(pickle.dumps(response))
             client_socket.shutdown(socket.SHUT_WR)
             return
 
