@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import board
+import digitalio
 from digitalio import DigitalInOut
 from typing_extensions import Self, final, override
 
@@ -27,3 +28,4 @@ class DigitalSwitchDeviceImpl(DigitalSwitchDevice):
                  pin: board.pin.Pin) -> None:
         super().__init__(device_name)
         self._digital_io = DigitalInOut(pin)
+        self._digital_io.direction = digitalio.Direction.OUTPUT
