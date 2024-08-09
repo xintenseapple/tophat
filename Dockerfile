@@ -8,7 +8,7 @@ RUN apt update && \
 
 # Install Python
 USER root
-RUN apt install -qy --no-install-recommends build-essential python3 python3-pip python3-dev
+RUN apt install -qy --no-install-recommends apt-utils build-essential python3 python3-pip python3-dev
 RUN python3 -m pip install --upgrade pip
 
 # Create new user
