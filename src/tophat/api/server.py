@@ -142,6 +142,8 @@ class TopHatServer:
 
         except KeyboardInterrupt:
             LOGGER.info('Closing tophat server...')
+
+        finally:
             for hat_box in self._hat_map.values():
                 hat_box.stop()
             self._socket_path.unlink(missing_ok=True)
