@@ -284,7 +284,7 @@ class RainbowCommand(NeopixelCommand):
 @dataclasses.dataclass(frozen=True, init=True)
 class RainbowWaveCommand(NeopixelCommand):
     duration: int
-    frequency: int = 10
+    frequency: int = 200
 
     @override
     def run(self: Self,

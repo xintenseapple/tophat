@@ -166,7 +166,7 @@ class TopHatServer:
             LOGGER.debug(f'Received {type(request.command).__name__} targeting device {request.device_name}')
             return request
 
-        except socket.error as socket_error:
+        except OSError as socket_error:
             LOGGER.error(f'Failed to communicate with client: {socket_error}')
 
         except pickle.UnpicklingError as unpickling_error:
@@ -220,7 +220,8 @@ class HatBox(Generic[HatType]):
                                                                  detach=True,
                                                                  auto_remove=True,
                                                                  cpu_percent=25,
-                                                                 volumes=self._container_volumes)
+                                                                 volumes=self._container_volumes,
+                                                                 **self._hat.extra_docker_args)
             return True
 
         except DockerException:

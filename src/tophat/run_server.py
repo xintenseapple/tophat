@@ -6,6 +6,7 @@ from pathlib import Path
 from adafruit_platformdetect import Detector
 
 from tophat.devices.digital_switch import DigitalSwitchDevice
+from tophat.hats.heap_miner import HeapMinerHat
 from tophat.hats.nfc_wrangler import NFCWranglerHat
 
 if Detector().board.any_raspberry_pi_40_pin:
@@ -33,6 +34,7 @@ def main() -> None:
                            board.D23)
 
     server.register_hat(NFCWranglerHat())
+    server.register_hat(HeapMinerHat())
 
     server.start()
 
