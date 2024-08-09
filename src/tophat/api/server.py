@@ -217,14 +217,14 @@ class HatBox(Generic[HatType]):
 
     def start(self: Self) -> bool:
         try:
-            print(f'Starting container for {type(self).__name__}...')
+            print(f'Starting container for {type(self._hat).__name__}...')
             self._container = self._docker_client.containers.run(image=self._hat.image_name,
                                                                  detach=True,
                                                                  auto_remove=True,
                                                                  cpu_percent=25,
                                                                  volumes=self._container_volumes,
                                                                  **self._hat.extra_docker_args)
-            print(f'Started container for {type(self).__name__}!')
+            print(f'Started container for {type(self._hat).__name__}!')
             return True
 
         except DockerException:
