@@ -28,3 +28,4 @@ RUN chmod -R 550 /home/hatman/tophat/
 ADD include/tophat/ /usr/include/tophat/
 
 USER hatman
+WORKDIR /home/hatman/

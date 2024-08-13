@@ -14,12 +14,14 @@ class DigitalSwitchDeviceImpl(DigitalSwitchDevice):
     @property
     @override
     def state(self: Self) -> bool:
+        self._digital_io.direction = digitalio.Direction.OUTPUT
         return self._digital_io.value
 
     @state.setter
     @override
     def state(self: Self,
               value: bool) -> None:
+        self._digital_io.direction = digitalio.Direction.OUTPUT
         self._digital_io.value = value
 
     @override
@@ -28,4 +30,3 @@ class DigitalSwitchDeviceImpl(DigitalSwitchDevice):
                  pin: board.pin.Pin) -> None:
         super().__init__(device_name)
         self._digital_io = DigitalInOut(pin)
-        self._digital_io.direction = digitalio.Direction.OUTPUT
